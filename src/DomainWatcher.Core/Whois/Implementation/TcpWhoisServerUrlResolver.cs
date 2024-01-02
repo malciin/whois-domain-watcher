@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using DomainWatcher.Core.Extensions;
 using DomainWatcher.Core.Whois.Contracts;
+using DomainWatcher.Core.Whois.Exceptions;
 
 namespace DomainWatcher.Core.Whois.Implementation;
 
@@ -10,11 +11,7 @@ public class TcpWhoisServerUrlResolver : IWhoisServerUrlResolver
 {
     private static readonly Regex WhoisRegex = new(@"whois:\s+([^ ]+)$", RegexOptions.Multiline);
 
-    public TcpWhoisServerUrlResolver()
-    {
-    }
-
-    public async Task<string?> Resolve(string tld)
+    public async Task<string> Resolve(string tld)
     {
         using var tcpClient = new TcpClient();
 
@@ -35,7 +32,7 @@ public class TcpWhoisServerUrlResolver : IWhoisServerUrlResolver
 
         if (!matches.Any())
         {
-            return null;
+            throw new UnexistingWhoisServerForTldException(tld, whoisResponse);
         }
 
         return matches.Single();

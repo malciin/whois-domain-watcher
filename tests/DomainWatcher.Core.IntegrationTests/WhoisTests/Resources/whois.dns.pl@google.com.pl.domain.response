@@ -1,0 +1,26 @@
+﻿
+DOMAIN NAME:           google.com.pl
+registrant type:       organization
+nameservers:           ns1.google.com.
+                       ns2.google.com.
+created:               2001.10.23 13:00:00
+last modified:         2022.09.20 11:27:06
+renewal date:          2023.10.22 14:00:00
+
+option created:        2022.09.15 16:34:31
+option expiration date:       2025.09.15 16:34:31
+
+dnssec:                Unsigned
+
+
+REGISTRAR:
+Markmonitor, Inc.
+2150 S Bonito Way, Suite 150
+Meridian, Idaho, 83642
+United States
++1.2083895740
+ccops@markmonitor.com
+
+WHOIS database responses: https://dns.pl/en/whois
+
+WHOIS displays data with a delay not exceeding 15 minutes in relation to the .pl Registry system

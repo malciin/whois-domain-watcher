@@ -3,7 +3,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher", "src\DomainWatcher\DomainWatcher.csproj", "{B626E539-2ECC-4161-B774-CF981FEA97D8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.Cli", "src\DomainWatcher.Cli\DomainWatcher.Cli.csproj", "{7CBFBB2B-24A5-4EF0-AFAC-CBB32BDCA110}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.Core", "src\DomainWatcher.Core\DomainWatcher.Core.csproj", "{BCA63218-7E18-4090-B092-1DB14EDEB3F0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1CCCEB6E-33CA-4327-A35C-F01C10DCA13D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{588ABCD0-C0CF-467A-87CE-22985440F69F}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.Core.IntegrationTests", "tests\DomainWatcher.Core.IntegrationTests\DomainWatcher.Core.IntegrationTests.csproj", "{41B993BD-777D-4A6E-83CA-70FC6CE3568F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,12 +22,26 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B626E539-2ECC-4161-B774-CF981FEA97D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B626E539-2ECC-4161-B774-CF981FEA97D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B626E539-2ECC-4161-B774-CF981FEA97D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B626E539-2ECC-4161-B774-CF981FEA97D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CBFBB2B-24A5-4EF0-AFAC-CBB32BDCA110}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CBFBB2B-24A5-4EF0-AFAC-CBB32BDCA110}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CBFBB2B-24A5-4EF0-AFAC-CBB32BDCA110}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CBFBB2B-24A5-4EF0-AFAC-CBB32BDCA110}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCA63218-7E18-4090-B092-1DB14EDEB3F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCA63218-7E18-4090-B092-1DB14EDEB3F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCA63218-7E18-4090-B092-1DB14EDEB3F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCA63218-7E18-4090-B092-1DB14EDEB3F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41B993BD-777D-4A6E-83CA-70FC6CE3568F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41B993BD-777D-4A6E-83CA-70FC6CE3568F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41B993BD-777D-4A6E-83CA-70FC6CE3568F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41B993BD-777D-4A6E-83CA-70FC6CE3568F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{41B993BD-777D-4A6E-83CA-70FC6CE3568F} = {1CCCEB6E-33CA-4327-A35C-F01C10DCA13D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6115D4D4-ACA3-45B9-8388-529747C8614D}
 	EndGlobalSection
 EndGlobal
