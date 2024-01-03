@@ -1,6 +1,6 @@
 ﻿namespace DomainWatcher.Core.Whois.Values;
 
-public class WhoisResponseParsed
+public class WhoisServerResponseParsed
 {
     public DateTime? Registration { get; init; }
 

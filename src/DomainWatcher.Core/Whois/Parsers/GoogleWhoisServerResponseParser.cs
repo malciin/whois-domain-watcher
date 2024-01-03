@@ -2,7 +2,7 @@
 
 namespace DomainWatcher.Core.Whois.Parsers;
 
-internal class GoogleWhoisResponseParser : WhoisResponseParser
+internal class GoogleWhoisServerResponseParser : WhoisServerResponseParser
 {
     public const string DateFormat = "yyyy-MM-dd\\THH:mm:ss\\Z";
 
@@ -11,14 +11,14 @@ internal class GoogleWhoisResponseParser : WhoisResponseParser
         yield return "whois.nic.google";
     }
 
-    internal override WhoisResponseParsed Parse(string rawResponse)
+    internal override WhoisServerResponseParsed Parse(string rawResponse)
     {
         if (rawResponse.StartsWith("Domain not found."))
         {
             return DomainAvailable;
         }
 
-        return new WhoisResponseParsed
+        return new WhoisServerResponseParsed
         {
             Registration = ParseDate(rawResponse, "Creation Date:", DateFormat)!,
             Expiration = ParseDate(rawResponse, "Registry Expiry Date:", DateFormat)!

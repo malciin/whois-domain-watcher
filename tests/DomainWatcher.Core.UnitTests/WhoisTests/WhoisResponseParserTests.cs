@@ -1,45 +1,37 @@
 ﻿using DomainWatcher.Core.Values;
-using DomainWatcher.Core.Whois.Contracts;
 using DomainWatcher.Core.Whois.Implementation;
-using Moq;
+using DomainWatcher.Core.Whois.Values;
 
 namespace DomainWatcher.Core.UnitTests.WhoisTests;
 
 [TestFixture]
-public class WhoisClientTests
+public class WhoisResponseParserTests
 {
-    private Mock<IWhoisServerUrlResolver> whoisServerUrlResolver;
-    private Mock<IWhoisRawClient> whoisRawClient;
-    private WhoisClient client;
+    private WhoisResponseParser parser;
 
     [SetUp]
     public void SetUp()
     {
-        whoisServerUrlResolver = new Mock<IWhoisServerUrlResolver>();
-        whoisRawClient = new Mock<IWhoisRawClient>();
-
-        client = new WhoisClient(whoisServerUrlResolver.Object, whoisRawClient.Object);
+        parser = new WhoisResponseParser();
     }
 
     [TestCaseSource(nameof(TestCases))]
-    public async Task GivenWhoisResponse_ReturnsCorrectResult(Domain domain, WhoisResponse expectedResponse)
+    public void GivenWhoisResponse_ReturnsCorrectResult(Domain domain, WhoisServerResponseParsed expectedResponse)
     {
-        var whoisServerUrl = TldToWhoisServerUrl.First(x => domain.Tld.EndsWith(x.Key)).Value;
+        var whoisServerUrl = GetWhoisServerUrl(domain);
         var whoisResponse = File.ReadAllText($"WhoisTests/Resources/{whoisServerUrl}@{domain.FullName}.domain.response");
-        whoisServerUrlResolver.Setup(x => x.Resolve(domain.Tld)).ReturnsAsync(whoisServerUrl);
-        whoisRawClient.Setup(x => x.QueryAsync(whoisServerUrl, domain)).ReturnsAsync(whoisResponse);
 
-        var response = await client.QueryAsync(domain);
+        var response = parser.Parse(whoisServerUrl, whoisResponse);
 
         Assert.That(response, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(response.Domain, Is.EqualTo(expectedResponse.Domain));
             Assert.That(response.Expiration, Is.EqualTo(expectedResponse.Expiration));
             Assert.That(response.Registration, Is.EqualTo(expectedResponse.Registration));
-            Assert.That(response.IsAvailable, Is.EqualTo(expectedResponse.IsAvailable));
         });
     }
+
+    private static string GetWhoisServerUrl(Domain domain) => TldToWhoisServerUrl.First(x => domain.Tld.EndsWith(x.Key)).Value;
 
     private static readonly IReadOnlyDictionary<string, string> TldToWhoisServerUrl = new Dictionary<string, string>
     {
@@ -55,45 +47,38 @@ public class WhoisClientTests
     {
         get
         {
-            yield return CreateTestCaseFor(new WhoisResponse
+            yield return CreateTestCaseFor(new Domain("google.com"), new WhoisServerResponseParsed
             {
-                Domain = new Domain("google.com"),
                 Expiration = new DateTime(2028, 09, 14, 04, 00, 00, DateTimeKind.Utc),
                 Registration = new DateTime(1997, 09, 15, 04, 00, 00, DateTimeKind.Utc)
             });
-            yield return CreateTestCaseFor(new WhoisResponse
+            yield return CreateTestCaseFor(new Domain("get.dev"), new WhoisServerResponseParsed
             {
-                Domain = new Domain("get.dev"),
                 Registration = new DateTime(2018, 10, 10, 19, 35, 58, DateTimeKind.Utc),
                 Expiration = new DateTime(2023, 10, 10, 19, 35, 58, DateTimeKind.Utc)
             });
-            yield return CreateTestCaseFor(new WhoisResponse
+            yield return CreateTestCaseFor(new Domain("google.pl"), new WhoisServerResponseParsed
             {
-                Domain = new Domain("google.pl"),
                 Registration = new DateTime(2002, 09, 19, 13, 00, 00, DateTimeKind.Utc),
                 Expiration = new DateTime(2023, 10, 14, 09, 30, 46, DateTimeKind.Utc)
             });
-            yield return CreateTestCaseFor(new WhoisResponse
+            yield return CreateTestCaseFor(new Domain("google.com.pl"), new WhoisServerResponseParsed
             {
-                Domain = new Domain("google.com.pl"),
                 Registration = new DateTime(2001, 10, 23, 13, 00, 00, DateTimeKind.Utc),
                 Expiration = new DateTime(2025, 09, 15, 16, 34, 31, DateTimeKind.Utc)
             });
-            yield return CreateTestCaseFor(new WhoisResponse
+            yield return CreateTestCaseFor(new Domain("twitch.tv"), new WhoisServerResponseParsed
             {
-                Domain = new Domain("twitch.tv"),
                 Registration = new DateTime(2009, 06, 08, 22, 31, 23, DateTimeKind.Utc),
                 Expiration = new DateTime(2024, 06, 08, 22, 31, 23, DateTimeKind.Utc)
             });
-            yield return CreateTestCaseFor(new WhoisResponse
+            yield return CreateTestCaseFor(new Domain("nutki.pl"), new WhoisServerResponseParsed
             {
-                Domain = new Domain("nutki.pl"),
                 Registration = new DateTime(2008, 07, 05, 16, 36, 16, DateTimeKind.Utc),
                 Expiration = new DateTime(2023, 07, 05, 16, 36, 16, DateTimeKind.Utc)
             });
-            yield return CreateTestCaseFor(new WhoisResponse
+            yield return CreateTestCaseFor(new Domain("google.io"), new WhoisServerResponseParsed
             {
-                Domain = new Domain("google.io"),
                 Registration = new DateTime(2002, 10, 01, 01, 00, 00, DateTimeKind.Utc),
                 Expiration = new DateTime(2023, 09, 30, 01, 00, 00, DateTimeKind.Utc)
             });
@@ -109,9 +94,8 @@ public class WhoisClientTests
             };
             foreach (var tld in unexistingDomains)
             {
-                yield return CreateTestCaseFor(new WhoisResponse
+                yield return CreateTestCaseFor(new Domain(tld), new WhoisServerResponseParsed
                 {
-                    Domain = new Domain(tld),
                     Registration = null,
                     Expiration = null
                 });
@@ -119,8 +103,8 @@ public class WhoisClientTests
         }
     }
 
-    private static TestCaseData CreateTestCaseFor(WhoisResponse response)
+    private static TestCaseData CreateTestCaseFor(Domain domain, WhoisServerResponseParsed response)
     {
-        return new TestCaseData([response.Domain, response]).SetArgDisplayNames(response.Domain.FullName);
+        return new TestCaseData([domain, response]).SetArgDisplayNames(domain.FullName);
     }
 }

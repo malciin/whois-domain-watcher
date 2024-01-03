@@ -12,5 +12,5 @@ public class WhoisResponse
 
     public bool IsAvailable => Expiration == null;
 
-    public string RawResponse { get; init; } = string.Empty;
+    public required string RawResponse { get; init; }
 }

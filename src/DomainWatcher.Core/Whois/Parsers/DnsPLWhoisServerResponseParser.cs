@@ -4,7 +4,7 @@ using DomainWatcher.Core.Whois.Values;
 
 namespace DomainWatcher.Core.Whois.Parsers;
 
-internal class DnsPLWhoisResponseParser : WhoisResponseParser
+internal class DnsPLWhoisServerResponseParser : WhoisServerResponseParser
 {
     private const string DateFormat = "yyyy.MM.dd HH:mm:ss";
 
@@ -13,14 +13,14 @@ internal class DnsPLWhoisResponseParser : WhoisResponseParser
         yield return "whois.dns.pl";
     }
 
-    internal override WhoisResponseParsed Parse(string rawResponse)
+    internal override WhoisServerResponseParsed Parse(string rawResponse)
     {
         if (rawResponse.Contains("No information available about domain name", StringComparison.InvariantCulture))
         {
             return DomainAvailable;
         }
 
-        return new WhoisResponseParsed
+        return new WhoisServerResponseParsed
         {
             Registration = ParseDate(rawResponse, "created:", DateFormat)!,
             Expiration = ParseDate(rawResponse, "option expiration date:", DateFormat)

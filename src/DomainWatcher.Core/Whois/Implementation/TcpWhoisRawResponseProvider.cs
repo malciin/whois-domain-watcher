@@ -1,12 +1,11 @@
 ﻿using System.Net.Sockets;
-using DomainWatcher.Core.Values;
 using DomainWatcher.Core.Whois.Contracts;
 
 namespace DomainWatcher.Core.Whois.Implementation;
 
-public class WhoisRawClient : IWhoisRawClient
+public class TcpWhoisRawResponseProvider : IWhoisRawResponseProvider
 {
-    public async Task<string> QueryAsync(string whoisServerUrl, Domain domain)
+    public async Task<string?> GetResponse(string whoisServerUrl, string queryLine)
     {
         using var tcpClient = new TcpClient();
         await tcpClient.ConnectAsync(whoisServerUrl, 43);
@@ -15,16 +14,9 @@ public class WhoisRawClient : IWhoisRawClient
         using var writter = new StreamWriter(networkStream, leaveOpen: true);
         using var receiver = new StreamReader(networkStream, leaveOpen: true);
 
-        await writter.WriteLineAsync(domain.ToString());
+        await writter.WriteLineAsync(queryLine);
         await writter.FlushAsync();
 
-        var whoisResponse = await receiver.ReadToEndAsync();
-
-        if (string.IsNullOrWhiteSpace(whoisResponse))
-        {
-            throw new NullReferenceException($"{whoisServerUrl} returned empty response for {domain}");
-        }
-
-        return whoisResponse;
+        return await receiver.ReadToEndAsync();
     }
 }

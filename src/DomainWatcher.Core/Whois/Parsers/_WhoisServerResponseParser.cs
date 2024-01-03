@@ -4,13 +4,13 @@ using DomainWatcher.Core.Whois.Values;
 
 namespace DomainWatcher.Core.Whois.Parsers;
 
-internal abstract class WhoisResponseParser
+internal abstract class WhoisServerResponseParser
 {
-    protected static readonly WhoisResponseParsed DomainAvailable = new();
+    protected static readonly WhoisServerResponseParsed DomainAvailable = new();
 
     internal abstract IEnumerable<string> GetSupportedWhoisServers();
 
-    internal abstract WhoisResponseParsed Parse(string rawResponse);
+    internal abstract WhoisServerResponseParsed Parse(string rawResponse);
 
     protected DateTime? ParseDate(string rawResponse, string lineWithDate, string dateFormat)
     {

@@ -15,7 +15,7 @@ public class WhoisClientTests
     public void SetUp()
     {
         whoisServerUrlResolver = new Mock<IWhoisServerUrlResolver>();
-        client = new WhoisClient(whoisServerUrlResolver.Object, new WhoisRawClient());
+        client = new WhoisClient(whoisServerUrlResolver.Object, new TcpWhoisRawResponseProvider(), new WhoisResponseParser());
     }
 
     [Test]

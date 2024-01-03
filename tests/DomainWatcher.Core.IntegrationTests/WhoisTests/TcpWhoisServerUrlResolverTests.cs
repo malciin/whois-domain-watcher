@@ -5,12 +5,12 @@ namespace DomainWatcher.Core.IntegrationTests.WhoisTests;
 [TestFixture]
 public class TcpWhoisServerUrlResolverTests
 {
-    private TcpWhoisServerUrlResolver resolver;
+    private WhoisServerUrlResolver resolver;
 
     [SetUp]
     public void SetUp()
     {
-        resolver = new TcpWhoisServerUrlResolver();
+        resolver = new WhoisServerUrlResolver(new TcpWhoisRawResponseProvider());
     }
 
     [TestCase("com", ExpectedResult = "whois.verisign-grs.com")]
