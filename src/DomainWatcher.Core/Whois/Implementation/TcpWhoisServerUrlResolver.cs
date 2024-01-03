@@ -1,5 +1,4 @@
 ﻿using System.Net.Sockets;
-using System.Text;
 using System.Text.RegularExpressions;
 using DomainWatcher.Core.Extensions;
 using DomainWatcher.Core.Whois.Contracts;
@@ -17,17 +16,14 @@ public class TcpWhoisServerUrlResolver : IWhoisServerUrlResolver
 
         await tcpClient.ConnectAsync("whois.iana.org", 43);
 
-        using var bufferedStreamWhois = new BufferedStream(tcpClient.GetStream());
-        using var writter = new StreamWriter(bufferedStreamWhois, leaveOpen: true);
-        using var receiver = new StreamReader(bufferedStreamWhois, leaveOpen: true);
+        using var networkStream = tcpClient.GetStream();
+        using var writter = new StreamWriter(networkStream, leaveOpen: true);
+        using var receiver = new StreamReader(networkStream, leaveOpen: true);
 
         await writter.WriteLineAsync(tld);
         await writter.FlushAsync();
 
-        var stringBuilderResult = new StringBuilder();
-        while (!receiver!.EndOfStream) stringBuilderResult.Append(await receiver.ReadToEndAsync());
-
-        var whoisResponse = stringBuilderResult.ToString();
+        var whoisResponse = await receiver.ReadToEndAsync();
         var matches = WhoisRegex.GroupMatches(whoisResponse).Select(x => x.Trim());
 
         if (!matches.Any())

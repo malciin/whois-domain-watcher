@@ -1,4 +1,5 @@
-﻿using DomainWatcher.Core.Values;
+﻿using DomainWatcher.Core.Extensions;
+using DomainWatcher.Core.Values;
 using DomainWatcher.Core.Whois.Contracts;
 using DomainWatcher.Core.Whois.Exceptions;
 using DomainWatcher.Core.Whois.Parsers;
@@ -9,12 +10,13 @@ public class WhoisClient(
     IWhoisServerUrlResolver whoisServerUrlResolver,
     IWhoisRawClient rawClient) : IWhoisClient
 {
-    private static readonly IReadOnlyDictionary<string, WhoisResponseParser> ParsersByWhoisServerUrl = new WhoisResponseParser[]
-    {
-        new DnsPLWhoisResponseParser(),
-        new GoogleWhoisResponseParser(),
-        new VerisignGrsWhoisResponseParser()
-    }.SelectMany(x => x.GetSupportedWhoisServers().Select(tld => KeyValuePair.Create(tld, x))).ToDictionary(x => x.Key, v => v.Value);
+    private static readonly IReadOnlyDictionary<string, WhoisResponseParser> ParsersByWhoisServerUrl = typeof(WhoisResponseParser)
+        .Assembly
+        .GetInstantiableTypesAssignableTo<WhoisResponseParser>()
+        .Select(Activator.CreateInstance)
+        .Cast<WhoisResponseParser>()
+        .SelectMany(x => x.GetSupportedWhoisServers().Select(tld => KeyValuePair.Create(tld, x)))
+        .ToDictionary(x => x.Key, v => v.Value);
 
     public async Task<bool> IsDomainSupported(Domain domain)
     {

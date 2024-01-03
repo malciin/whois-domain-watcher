@@ -2,6 +2,15 @@
 
 public static class StringExtensions
 {
+    public static string SubstringToFirst(this string @string, char @char)
+    {
+        var charIndex = @string.IndexOf(@char);
+
+        return charIndex < 0
+            ? @string
+            : @string[..charIndex];
+    }
+
     public static string? GetLineThatContains(this string @string, string substring)
     {
         var index = @string.IndexOf(substring);

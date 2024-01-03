@@ -7,7 +7,7 @@ public class TcpWhoisServerUrlResolverTests
 {
     private TcpWhoisServerUrlResolver resolver;
 
-    [OneTimeSetUp]
+    [SetUp]
     public void SetUp()
     {
         resolver = new TcpWhoisServerUrlResolver();
