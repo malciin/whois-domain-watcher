@@ -1,5 +1,6 @@
 ﻿using DomainWatcher.Core;
 using DomainWatcher.Infrastructure.HttpServer;
+using DomainWatcher.Infrastructure.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -13,6 +14,7 @@ hostBuilder
     .ConfigureLogging((_, logging) => logging.AddSerilog())
     .ConfigureServices(x => x
         .AddCore()
+        .AddSqlite()
         .AddInternalHttpServer(x => x.Port = 8050)
         .UseEndpointsFromCurrentAssembly()
         .RegisterAsHostedService())
@@ -25,6 +27,8 @@ hostBuilder
         .Enrich.WithComputed("SourceContextName", "Substring(SourceContext, LastIndexOf(SourceContext, '.') + 1)"));
 
 using var host = hostBuilder.Build();
+
+await host.Services.GetRequiredService<SqliteDbMigrator>().MigrateIfNecessary();
 
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
 logger.LogDebug("Startup took {Elapsed:0.0000}ms", (DateTime.UtcNow - startupBegining).TotalMilliseconds);

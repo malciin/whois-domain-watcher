@@ -7,7 +7,7 @@ public class TimedSequence<T>
 {
     public int Count => sortedJobSequence.Count;
 
-    private readonly SortedDictionary<DateTimeOffset, T> sortedJobSequence;
+    private readonly SortedDictionary<DateTime, T> sortedJobSequence;
     private readonly object readerCtsLock;
 
     private ReaderCancellationTokenSource? readerCts;
@@ -16,6 +16,21 @@ public class TimedSequence<T>
     {
         sortedJobSequence = [];
         readerCtsLock = new();
+    }
+
+    public bool TryPeek(out DateTime fireAt, out T? item)
+    {
+        fireAt = DateTime.MinValue;
+        item = default;
+
+        lock (sortedJobSequence)
+        {
+            if (Count == 0) return false;
+
+            (fireAt, item) = sortedJobSequence.FirstOrDefault();
+        }
+
+        return true;
     }
 
     public void Add(T item, TimeSpan delay) => Add(item, DateTime.UtcNow + delay);
@@ -55,13 +70,12 @@ public class TimedSequence<T>
         {
             using var readerCts = CreateReaderTokenSourceLinkedTo(cancellationToken);
 
-            if (!sortedJobSequence.Any())
+            if (!TryPeek(out var fireAt, out var item))
             {
                 await Task.Delay(-1, readerCts.NewItemPresentToken).CaptureCancellation();
                 continue;
             }
 
-            var (fireAt, item) = sortedJobSequence.FirstOrDefault();
             var delay = fireAt - DateTime.UtcNow;
 
             if (delay.TotalMilliseconds > 0)
@@ -78,7 +92,7 @@ public class TimedSequence<T>
 
             lock (sortedJobSequence) sortedJobSequence.Remove(fireAt);
 
-            return item;
+            return item!;
         }
 
         throw new TaskCanceledException("Read cancelled");

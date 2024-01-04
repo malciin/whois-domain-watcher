@@ -10,16 +10,25 @@ public class WhoisClient(
     IWhoisRawResponseProvider rawClient,
     IWhoisResponseParser whoisResponseParser) : IWhoisClient
 {
-    public async Task<bool> IsDomainSupported(Domain domain)
+    public async Task<IsDomainSupportedResult> IsDomainSupported(Domain domain)
     {
         var whoisServerUrl = await whoisServerUrlResolver.Resolve(domain.Tld);
 
-        return whoisResponseParser.DoesSupport(whoisServerUrl);
+        return new IsDomainSupportedResult
+        {
+            WhoisServerUrl = whoisServerUrl,
+            IsSupported = whoisServerUrl != null && whoisResponseParser.DoesSupport(whoisServerUrl)
+        };
     }
 
     public async Task<WhoisResponse> QueryAsync(Domain domain)
     {
         var whoisServerUrl = await whoisServerUrlResolver.Resolve(domain.Tld);
+
+        if (whoisServerUrl == null)
+        {
+            throw new InvalidOperationException($"Invalid tld: {domain.Tld}");
+        }
 
         if (!whoisResponseParser.DoesSupport(whoisServerUrl))
         {
@@ -31,7 +40,8 @@ public class WhoisClient(
 
         if (string.IsNullOrWhiteSpace(whoisResponse))
         {
-            throw new UnexpectedWhoisResponseException("Empty whois response", whoisResponse);
+            throw new UnexpectedWhoisResponseException(
+                $"Empty whois response from whois server url: {whoisServerUrl}", whoisResponse);
         }
 
         WhoisServerResponseParsed parsed;

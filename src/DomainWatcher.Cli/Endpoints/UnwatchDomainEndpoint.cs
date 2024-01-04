@@ -11,6 +11,6 @@ public class UnwatchDomainEndpoint : IHttpEndpoint
 
     public Task<HttpResponse> Handle(HttpRequest request)
     {
-        return HttpResponse.PlainText("OK - Unwatch");
+        return HttpResponse.PlainText("Implement unwatch");
     }
 }

@@ -2,5 +2,5 @@
 
 public interface IWhoisServerUrlResolver
 {
-    Task<string> Resolve(string tld);
+    Task<string?> Resolve(string tld);
 }

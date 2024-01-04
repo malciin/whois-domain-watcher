@@ -1,10 +1,11 @@
 ﻿using DomainWatcher.Core.Values;
+using DomainWatcher.Core.Whois.Values;
 
 namespace DomainWatcher.Core.Whois;
 
 public interface IWhoisClient
 {
-    Task<bool> IsDomainSupported(Domain domain);
+    Task<IsDomainSupportedResult> IsDomainSupported(Domain domain);
 
     Task<WhoisResponse> QueryAsync(Domain domain);
 }

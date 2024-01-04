@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.Cli", "src\DomainWatcher.Cli\DomainWatcher.Cli.csproj", "{7CBFBB2B-24A5-4EF0-AFAC-CBB32BDCA110}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Cli", "src\DomainWatcher.Cli\DomainWatcher.Cli.csproj", "{7CBFBB2B-24A5-4EF0-AFAC-CBB32BDCA110}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.Core", "src\DomainWatcher.Core\DomainWatcher.Core.csproj", "{BCA63218-7E18-4090-B092-1DB14EDEB3F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Core", "src\DomainWatcher.Core\DomainWatcher.Core.csproj", "{BCA63218-7E18-4090-B092-1DB14EDEB3F0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1CCCEB6E-33CA-4327-A35C-F01C10DCA13D}"
 EndProject
@@ -14,13 +14,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.Core.IntegrationTests", "tests\DomainWatcher.Core.IntegrationTests\DomainWatcher.Core.IntegrationTests.csproj", "{41B993BD-777D-4A6E-83CA-70FC6CE3568F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Core.IntegrationTests", "tests\DomainWatcher.Core.IntegrationTests\DomainWatcher.Core.IntegrationTests.csproj", "{41B993BD-777D-4A6E-83CA-70FC6CE3568F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.Infrastructure.Sqlite", "src\DomainWatcher.Infrastructure.Sqlite\DomainWatcher.Infrastructure.Sqlite.csproj", "{D543FC92-81D6-4C0D-AE09-FFCBA947006D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Infrastructure.Sqlite", "src\DomainWatcher.Infrastructure.Sqlite\DomainWatcher.Infrastructure.Sqlite.csproj", "{D543FC92-81D6-4C0D-AE09-FFCBA947006D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.Infrastructure.HttpServer", "src\DomainWatcher.Infrastructure.HttpServer\DomainWatcher.Infrastructure.HttpServer.csproj", "{BB28E7D3-69B7-4531-BE0B-530A8E67895F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Infrastructure.HttpServer", "src\DomainWatcher.Infrastructure.HttpServer\DomainWatcher.Infrastructure.HttpServer.csproj", "{BB28E7D3-69B7-4531-BE0B-530A8E67895F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.Core.UnitTests", "tests\DomainWatcher.Core.UnitTests\DomainWatcher.Core.UnitTests.csproj", "{8031034A-4F59-4C42-8AC6-6083785F1A3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Core.UnitTests", "tests\DomainWatcher.Core.UnitTests\DomainWatcher.Core.UnitTests.csproj", "{8031034A-4F59-4C42-8AC6-6083785F1A3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.Infrastructure.HttpServer.IntegrationTests", "tests\DomainWatcher.Infrastructure.HttpServer.IntegrationTests\DomainWatcher.Infrastructure.HttpServer.IntegrationTests.csproj", "{E5A64623-0231-479F-8E10-60FB67CCF158}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.Infrastructure.Sqlite.IntegrationTests", "tests\DomainWatcher.Infrastructure.Sqlite.IntegrationTests\DomainWatcher.Infrastructure.Sqlite.IntegrationTests.csproj", "{8A161A54-A8BA-42C7-8A7C-FD4BC05D0FF0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -52,6 +56,14 @@ Global
 		{8031034A-4F59-4C42-8AC6-6083785F1A3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8031034A-4F59-4C42-8AC6-6083785F1A3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8031034A-4F59-4C42-8AC6-6083785F1A3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5A64623-0231-479F-8E10-60FB67CCF158}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5A64623-0231-479F-8E10-60FB67CCF158}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5A64623-0231-479F-8E10-60FB67CCF158}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5A64623-0231-479F-8E10-60FB67CCF158}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A161A54-A8BA-42C7-8A7C-FD4BC05D0FF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A161A54-A8BA-42C7-8A7C-FD4BC05D0FF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A161A54-A8BA-42C7-8A7C-FD4BC05D0FF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A161A54-A8BA-42C7-8A7C-FD4BC05D0FF0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,6 +71,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{41B993BD-777D-4A6E-83CA-70FC6CE3568F} = {1CCCEB6E-33CA-4327-A35C-F01C10DCA13D}
 		{8031034A-4F59-4C42-8AC6-6083785F1A3E} = {1CCCEB6E-33CA-4327-A35C-F01C10DCA13D}
+		{E5A64623-0231-479F-8E10-60FB67CCF158} = {1CCCEB6E-33CA-4327-A35C-F01C10DCA13D}
+		{8A161A54-A8BA-42C7-8A7C-FD4BC05D0FF0} = {1CCCEB6E-33CA-4327-A35C-F01C10DCA13D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6115D4D4-ACA3-45B9-8388-529747C8614D}

@@ -11,6 +11,9 @@ public class HttpServer(
     IEnumerable<IRequestMiddleware> requestMiddlewares,
     ILogger<HttpServer> logger)
 {
+    public int AssignedPort { get; private set; }
+
+
     private readonly IReadOnlyCollection<IRequestMiddleware> requestMiddlewares = requestMiddlewares.ToList();
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -18,7 +21,9 @@ public class HttpServer(
         var tcpListener = new TcpListener(IPAddress.Any, options.Port);
         tcpListener.Start();
 
-        logger.LogInformation("Listening on {Port}", ((IPEndPoint)tcpListener.LocalEndpoint).Port);
+        AssignedPort = ((IPEndPoint)tcpListener.LocalEndpoint).Port;
+
+        logger.LogInformation("Listening on {Port}", AssignedPort);
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -40,6 +45,8 @@ public class HttpServer(
         }
 
         tcpListener.Stop();
+
+        logger.LogDebug("Http server gracefully stopped.");
     }
 
     private async Task TryHandleClient(TcpClient client, CancellationToken cancellationToken)
