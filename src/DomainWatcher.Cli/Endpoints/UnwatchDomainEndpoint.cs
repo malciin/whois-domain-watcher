@@ -1,16 +1,27 @@
-﻿using DomainWatcher.Infrastructure.HttpServer.Contracts;
+﻿using DomainWatcher.Core.Repositories;
+using DomainWatcher.Core.Values;
+using DomainWatcher.Infrastructure.HttpServer.Contracts;
 using DomainWatcher.Infrastructure.HttpServer.Models;
 
 namespace DomainWatcher.Cli.Endpoints;
 
-public class UnwatchDomainEndpoint : IHttpEndpoint
+public class UnwatchDomainEndpoint(IDomainsRepository repository) : IHttpEndpoint
 {
     public static HttpMethod Method => HttpMethod.Delete;
 
     public static string Path => "/";
 
-    public Task<HttpResponse> Handle(HttpRequest request)
+    public async Task<HttpResponse> Handle(HttpRequest request)
     {
-        return HttpResponse.PlainText("Implement unwatch");
+        var domain = new Domain(request.Body);
+
+        if (!await repository.IsWatched(domain))
+        {
+            return HttpResponse.PlainText($"{domain.FullName} was not watched.");
+        }
+
+        await repository.Unwatch(domain);
+
+        return HttpResponse.PlainText($"{domain.FullName} unwatched!");
     }
 }

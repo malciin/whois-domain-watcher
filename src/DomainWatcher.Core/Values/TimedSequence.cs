@@ -33,6 +33,11 @@ public class TimedSequence<T>
         return true;
     }
 
+    public IReadOnlyList<KeyValuePair<DateTime, T>> GetEntries()
+    {
+        lock (sortedJobSequence) return sortedJobSequence.ToList();
+    }
+
     public void Add(T item, TimeSpan delay) => Add(item, DateTime.UtcNow + delay);
 
     public void Add(T item, DateTime fireAt)

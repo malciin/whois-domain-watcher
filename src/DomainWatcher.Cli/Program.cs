@@ -15,7 +15,7 @@ hostBuilder
     .ConfigureServices(x => x
         .AddCore()
         .AddSqlite()
-        .AddInternalHttpServer(x => x.Port = 8050)
+        .AddInternalHttpServer(x => x.Port = 8051)
         .UseEndpointsFromCurrentAssembly()
         .RegisterAsHostedService())
     .UseSerilog((_, configuration) => configuration

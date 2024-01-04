@@ -36,8 +36,9 @@ public class WatchDomainEndpoint(
 
         if (domainSupportedResult.IsSupported)
         {
-            await domainsRepository.Watch(domain);
             var whoisResponse = await client.QueryAsync(domain);
+            await domainsRepository.Watch(domain);
+            await whoisResponsesRepository.Add(whoisResponse);
 
             queryQueue.EnqueueNext(domain, whoisResponse);
 

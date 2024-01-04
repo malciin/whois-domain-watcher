@@ -27,6 +27,11 @@ public class DomainsQueryQueue : IDomainsQueryQueue
         return domainsTimedSequence.TryPeek(out fireAt, out domain);
     }
 
+    public IReadOnlyList<(Domain Domain, DateTime FireAt)> GetEntries()
+    {
+        return domainsTimedSequence.GetEntries().Select(x => (x.Value, x.Key)).ToList();
+    }
+
     public void EnqueueNext(Domain domain, WhoisResponse? latestResponse)
     {
         domainInvalidResponsesCounter.AddOrUpdate(domain, _ => 0, (_, __) => 0);
