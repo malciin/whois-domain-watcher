@@ -1,4 +1,5 @@
 ﻿using DomainWatcher.Core;
+using DomainWatcher.Core.Whois.Contracts;
 using DomainWatcher.Infrastructure.HttpServer;
 using DomainWatcher.Infrastructure.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 
-var startupBegining = DateTime.UtcNow;
 var hostBuilder = Host.CreateDefaultBuilder(args);
 
 hostBuilder
@@ -15,6 +15,7 @@ hostBuilder
     .ConfigureServices(x => x
         .AddCore()
         .AddSqlite()
+        .AddSqliteCacheFor<IWhoisServerUrlResolver>()
         .AddInternalHttpServer(x => x.Port = 8051)
         .UseEndpointsFromCurrentAssembly()
         .RegisterAsHostedService())
@@ -31,7 +32,6 @@ using var host = hostBuilder.Build();
 await host.Services.GetRequiredService<SqliteDbMigrator>().MigrateIfNecessary();
 
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
-logger.LogDebug("Startup took {Elapsed:0.0000}ms", (DateTime.UtcNow - startupBegining).TotalMilliseconds);
 logger.LogInformation("Press CTRL+C to stop.");
 
 await host.RunAsync();

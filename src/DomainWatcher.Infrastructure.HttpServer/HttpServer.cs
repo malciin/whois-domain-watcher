@@ -104,7 +104,7 @@ public class HttpServer(
             }
         }
 
-        logger.LogTrace("Request {Url} not handled by any middleware. Returning {Status} status.", request.Url, HttpResponse.NotFound.Code);
+        logger.LogTrace("Request {Url} not handled by any middleware. Returning {Status} status.", request.RelativeUrl, HttpResponse.NotFound.Code);
 
         return HttpResponse.NotFound;
     }

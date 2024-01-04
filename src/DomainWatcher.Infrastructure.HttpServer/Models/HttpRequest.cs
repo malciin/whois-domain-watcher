@@ -9,10 +9,7 @@ public partial class HttpRequest
 {
     public required HttpMethod Method { get; init; }
 
-    /// <summary>
-    /// Local path (without https, host etc)
-    /// </summary>
-    public required string Url { get; init; }
+    public required string RelativeUrl { get; init; }
 
     public required IReadOnlyDictionary<string, string> Headers { get; init; }
 
@@ -22,7 +19,7 @@ public partial class HttpRequest
         ? userAgent
         : null;
 
-    [GeneratedRegex("(?<method>GET|POST|PATCH|DELETE|OPTIONS) (?<path>[/\\-a-zA-Z0-9\\.\\?\\&]+) HTTP/1.1")]
+    [GeneratedRegex(@"(?<method>GET|POST|PATCH|DELETE|OPTIONS) (?<path>[/\-a-zA-Z0-9\.\?\&]+) HTTP/1.1")]
     private static partial Regex GetHttp11HeaderGeneratedRegex();
 
     [GeneratedRegex("(?<key>.+)?: (?<value>.*)")]
@@ -64,7 +61,7 @@ public partial class HttpRequest
         var request = new HttpRequest
         {
             Method = new HttpMethod(match.Groups["method"].Value),
-            Url = match.Groups["path"].Value,
+            RelativeUrl = match.Groups["path"].Value,
             Headers = headers,
             Body = body
         };

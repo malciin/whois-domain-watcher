@@ -18,11 +18,10 @@ internal class EndpointDispatcherMiddleware(
             return null;
         }
         
-        logger.LogTrace("{Method} {Url} resolved to {Endpoint}", request.Method, request.Url, endpointType!.FullName);
+        logger.LogTrace("{Method} {Url} resolved to {Endpoint}", request.Method, request.RelativeUrl, endpointType!.FullName);
 
         using var serviceScope = serviceScopeFactory.CreateScope();
         var endpoint = (IHttpEndpoint)serviceScope.ServiceProvider.GetRequiredService(endpointType);
-
 
         return await endpoint.Handle(request);
     }

@@ -2,7 +2,7 @@
 
 namespace DomainWatcher.Infrastructure.Sqlite.Abstract;
 
-public class SqliteService
+public abstract class SqliteService
 {
     public SqliteService(SqliteConnection connection)
     {

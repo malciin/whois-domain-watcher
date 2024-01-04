@@ -1,25 +1,31 @@
-## `domain-watcher`
+# `whois-domain-watcher`
 
-Simple cli http daemon that watches domains and stores whois respones in sqlite database. It can be used with any http tool like `cURL` on linux or `Invoke-RestMethod` on windows `PowerShell`.
+Simple http daemon that watches whois responses for domains. Every whois response is parsed and stored. It can be used for tracking what domains are expired or are aboutt to be expired.
 
-### Usage
+It's intended to be used with any cli http client like `cURL` on linux or `Invoke-RestMethod` on windows `PowerShell`.
 
-#### Windows PowerShell - `Invoke-RestMethod`
+## Features
 
-`Invoke-RestMethod http://localhost:8051` - gets watched domain statuses
+- automatic resolution of responsible whois server for given `TLD` from `whois.iana.org` - ex. for `.PL` it resolves to `whois.dns.pl`
 
-`Invoke-RestMethod http://localhost:8051 -Method 'POST' -Body 'google.com'` - watches domain and returns its status
+- auto querying whois for watched domains
 
-`Invoke-RestMethod http://localhost:8051 -Method 'DELETE' -Body 'google.com'` - unwatches domain
+- generating list of watched domains sorted by available ones, then by expiration timestamp
 
-`Invoke-RestMethod http://localhost:8051/queue` - gets queue status - allows to check when each of the watched domains will be queried
+- written with `cURL`/`PowerShell` in mind as preferred daemon control API
 
-#### Linux - `cURL`
+- every whois response is stored in sqlite db which can be processed further
 
-`curl localhost:8051` - gets watched domain statuses
+- internal http server written from scratch (just for fun)
 
-`curl -d "google.com" localhost:8051` - watches domain and returns its status
+## Usage
 
-`curl -X DELETE -d "google.com" localhost:8051` - unwatches domain
+For sake of simplicity I've assume url to be `localhost:8051` and - if applicable - domain parameter is `google.com`.
 
-`curl localhost:8051/queue` - gets queue status - allows to check when each of the watched domains will be queried
+| PowerShell | cURL | Description | 
+|-|-|-|
+| `Invoke-RestMethod http://localhost:8051` | `curl localhost:8051` | Gets watched domain statuses |
+| `Invoke-RestMethod http://localhost:8051/google.com` | `curl localhost:8051/google.com` | Gets whois response for any domain. It does not change domain watch status |
+| `Invoke-RestMethod http://localhost:8051 -Method 'POST' -Body 'google.com'` | `curl -d "google.com" localhost:8051` | Watches domain and returns its status |
+| `Invoke-RestMethod http://localhost:8051 -Method 'DELETE' -Body 'google.com'` | `curl -X DELETE -d "google.com" localhost:8051` | Unwatches domain |
+| `Invoke-RestMethod http://localhost:8051/queue` | `curl localhost:8051/queue` | Gets processing queue status - allows to check when each of the watched domains will be queried |
