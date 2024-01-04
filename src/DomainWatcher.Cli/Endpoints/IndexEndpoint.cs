@@ -21,7 +21,7 @@ public class IndexEndpoint(
             .SelectAwait(async (domain) => (Domain: domain, LatestResponse: await whoisResponsesRepository.GetLatestFor(domain)))
             .OrderByDescending(x => x.LatestResponse == null)
             .ThenByDescending(x => x.LatestResponse?.IsAvailable)
-            .ThenByDescending(x => x.LatestResponse?.Expiration)
+            .ThenBy(x => x.LatestResponse?.Expiration)
             .ToListAsync();
 
         if (domains.Count == 0)
