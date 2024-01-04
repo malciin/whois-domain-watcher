@@ -18,6 +18,7 @@ internal class VerisignGrsWhoisServerResponseParser : WhoisServerResponseParser
         yield return "whois.verisign-grs.com";
         yield return "tvwhois.verisign-grs.com";
         yield return "whois.nic.io";
+        yield return "whois.nic.tv";
     }
 
     internal override WhoisServerResponseParsed Parse(string rawResponse)
