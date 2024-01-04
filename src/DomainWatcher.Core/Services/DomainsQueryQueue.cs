@@ -1,8 +1,10 @@
 ﻿using System.Collections.Concurrent;
 using DomainWatcher.Core.Contracts;
+using DomainWatcher.Core.Enums;
 using DomainWatcher.Core.Extensions;
 using DomainWatcher.Core.Utilities;
 using DomainWatcher.Core.Values;
+using DomainWatcher.Core.Whois.Contracts;
 using Microsoft.Extensions.Logging;
 
 namespace DomainWatcher.Core.Services;
@@ -12,12 +14,16 @@ public class DomainsQueryQueue : IDomainsQueryQueue
     private readonly ILogger<DomainsQueryQueue> logger;
     private readonly TimedSequence<Domain> domainsTimedSequence;
     private readonly ConcurrentDictionary<Domain, int> domainInvalidResponsesCounter;
+    private readonly IWhoisResponseParser whoisResponseParser;
 
     public int Count => domainInvalidResponsesCounter.Count;
 
-    public DomainsQueryQueue(ILogger<DomainsQueryQueue> logger)
+    public DomainsQueryQueue(
+        ILogger<DomainsQueryQueue> logger,
+        IWhoisResponseParser whoisResponseParser)
     {
         this.logger = logger;
+        this.whoisResponseParser = whoisResponseParser;
         domainsTimedSequence = new TimedSequence<Domain>();
         domainInvalidResponsesCounter = new ConcurrentDictionary<Domain, int>();
     }
@@ -43,6 +49,14 @@ public class DomainsQueryQueue : IDomainsQueryQueue
         else if (latestResponse.IsAvailable)
         {
             Enqueue(domain, TimeSpan.FromHours(12));
+        }
+        else if (latestResponse.Status == WhoisResponseStatus.TakenButTimestampsHidden)
+        {
+            Enqueue(domain, TimeSpan.FromDays(1));
+        }
+        else if (latestResponse.Status == WhoisResponseStatus.ParserMissing)
+        {
+            Enqueue(domain, whoisResponseParser.DoesSupport(latestResponse.SourceServer) ? TimeSpan.Zero : TimeSpan.FromDays(7));
         }
         else
         {

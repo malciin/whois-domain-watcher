@@ -2,7 +2,7 @@
 
 internal class _001_InitialMigration : SqlCommandMigration
 {
-    public override string Command => $"""
+    public override string Command => """
         CREATE TABLE Domains (
             Id INTEGER PRIMARY KEY AUTOINCREMENT,
             Domain TEXT UNIQUE NOT NULL,

@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using DomainWatcher.Cli.Utils;
 using DomainWatcher.Core.Extensions;
 using DomainWatcher.Core.Repositories;
 using DomainWatcher.Infrastructure.HttpServer.Contracts;
@@ -21,6 +22,7 @@ public class IndexEndpoint(
             .SelectAwait(async (domain) => (Domain: domain, LatestResponse: await whoisResponsesRepository.GetLatestFor(domain)))
             .OrderByDescending(x => x.LatestResponse == null)
             .ThenByDescending(x => x.LatestResponse?.IsAvailable)
+            .ThenBy(x => x.LatestResponse?.Status)
             .ThenBy(x => x.LatestResponse?.Expiration)
             .ToListAsync();
 
@@ -34,19 +36,14 @@ public class IndexEndpoint(
 
         foreach (var (domain, latestResponse) in domains)
         {
-            stringBuilder.Append($"{domain.FullName.PadRight(length)} ");
+            stringBuilder.AppendLine($"{domain.FullName.PadRight(length)} {WhoisResponseDescriptiveStatus.Get(latestResponse)}");
 
-            if (latestResponse == null) stringBuilder.Append("Not yet queried");
-            else if (latestResponse.IsAvailable) stringBuilder.Append("Available");
-            else
+            if (latestResponse != null)
             {
-                stringBuilder.AppendLine($"Taken for {(latestResponse.Expiration!.Value - DateTime.UtcNow).ToJiraDuration(2)} ({latestResponse.Expiration!.Value:yyyy-MM-dd HH:mm})");
-                stringBuilder.Append($"{' '.ToString().PadRight(length)} Queried {(DateTime.UtcNow - latestResponse.QueryTimestamp).ToJiraDuration(2)} ago");
+                stringBuilder.AppendLine($"{' '.ToString().PadRight(length)} Queried {(DateTime.UtcNow - latestResponse.QueryTimestamp).ToJiraDuration(2)} ago");
             }
-
-            if (domain != domains.Last().Domain) stringBuilder.AppendLine();
         }
 
-        return HttpResponse.PlainText(stringBuilder.ToString());
+        return HttpResponse.PlainText(stringBuilder.ToString().TrimEnd());
     }
 }

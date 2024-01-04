@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using DomainWatcher.Core.Enums;
 using DomainWatcher.Core.Extensions;
 using DomainWatcher.Core.Whois.Values;
 
@@ -6,7 +7,12 @@ namespace DomainWatcher.Core.Whois.Parsers;
 
 internal abstract class WhoisServerResponseParser
 {
-    protected static readonly WhoisServerResponseParsed DomainAvailable = new();
+    protected static readonly WhoisServerResponseParsed DomainAvailable = new()
+    {
+        Status = WhoisResponseStatus.OK,
+        Expiration = null,
+        Registration = null
+    };
 
     internal abstract IEnumerable<string> GetSupportedWhoisServers();
 

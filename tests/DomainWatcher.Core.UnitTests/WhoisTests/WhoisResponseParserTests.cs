@@ -1,4 +1,5 @@
-﻿using DomainWatcher.Core.Values;
+﻿using DomainWatcher.Core.Enums;
+using DomainWatcher.Core.Values;
 using DomainWatcher.Core.Whois.Implementation;
 using DomainWatcher.Core.Whois.Values;
 
@@ -26,6 +27,7 @@ public class WhoisResponseParserTests
         Assert.That(response, Is.Not.Null);
         Assert.Multiple(() =>
         {
+            Assert.That(response.Status, Is.EqualTo(expectedResponse.Status));
             Assert.That(response.Expiration, Is.EqualTo(expectedResponse.Expiration));
             Assert.That(response.Registration, Is.EqualTo(expectedResponse.Registration));
         });
@@ -84,6 +86,13 @@ public class WhoisResponseParserTests
                 Registration = new DateTime(2002, 10, 01, 01, 00, 00, DateTimeKind.Utc),
                 Expiration = new DateTime(2023, 09, 30, 01, 00, 00, DateTimeKind.Utc)
             };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("google.eu"),
+                Status = WhoisResponseStatus.TakenButTimestampsHidden,
+                Registration = null,
+                Expiration = null
+            };
 
             var unexistingDomains = new[]
             {
@@ -93,7 +102,8 @@ public class WhoisResponseParserTests
                 "some-untaken-domain.net",
                 "some-untaken-domain.io",
                 "some-untaken-domain.tv",
-                "some-untaken-domain-but-different-response.net"
+                "some-untaken-domain-but-different-response.net",
+                "some-untaken-domain.eu"
             };
             foreach (var domain in unexistingDomains)
             {
@@ -113,7 +123,7 @@ public class WhoisResponseParserTests
     
         public string WhoisServerUrl
         {
-            get => whoisServerOverride ?? DefaultTldToWhoisServerUrl.First(x => Domain.Tld.EndsWith(x.Key)).Value;
+            get => whoisServerOverride ?? DefaultTldToWhoisServerUrl.Single(x => Domain.Tld.EndsWith(x.Key)).Value;
             init => whoisServerOverride = value;
         }
 
@@ -132,6 +142,7 @@ public class WhoisResponseParserTests
             ["net"] = "whois.verisign-grs.com",
             ["com"] = "whois.verisign-grs.com",
             ["io"] = "whois.nic.io",
+            ["eu"] = "whois.eu",
         };
     }
 }

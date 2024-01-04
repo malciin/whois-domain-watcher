@@ -1,8 +1,12 @@
-﻿namespace DomainWatcher.Core.Whois.Values;
+﻿using DomainWatcher.Core.Enums;
+
+namespace DomainWatcher.Core.Whois.Values;
 
 public class WhoisServerResponseParsed
 {
-    public DateTime? Registration { get; init; }
+    public WhoisResponseStatus Status { get; init; } = WhoisResponseStatus.OK;
 
-    public DateTime? Expiration { get; init; }
+    public required DateTime? Registration { get; init; }
+
+    public required DateTime? Expiration { get; init; }
 }

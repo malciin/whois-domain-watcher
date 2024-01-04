@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using DomainWatcher.Core.Enums;
 using DomainWatcher.Core.Repositories;
 using DomainWatcher.Core.Values;
 using DomainWatcher.Infrastructure.Sqlite.Abstract;
@@ -16,6 +17,8 @@ public class SqliteWhoisResponsesRepository(SqliteConnection connection) : Sqlit
             INSERT INTO {TableNames.WhoisResponses}
                 (
                     {nameof(WhoisResponseRow.DomainId)},
+                    {nameof(WhoisResponseRow.SourceServer)},
+                    {nameof(WhoisResponseRow.Status)},
                     {nameof(WhoisResponseRow.QueryTimestamp)},
                     {nameof(WhoisResponseRow.Registration)},
                     {nameof(WhoisResponseRow.Expiration)},
@@ -24,6 +27,8 @@ public class SqliteWhoisResponsesRepository(SqliteConnection connection) : Sqlit
                 VALUES
                 (
                     ( SELECT {nameof(DomainRow.Id)} FROM {TableNames.Domains} WHERE {nameof(DomainRow.Domain)} = @domainName ),
+                    @sourceServer,
+                    @status,
                     @queryTimestamp,
                     @registration,
                     @expiration,
@@ -32,6 +37,8 @@ public class SqliteWhoisResponsesRepository(SqliteConnection connection) : Sqlit
             """,
             new
             {
+                sourceServer = whoisResponse.SourceServer,
+                status = whoisResponse.Status,
                 domainName = whoisResponse.Domain.FullName,
                 queryTimestamp = whoisResponse.QueryTimestamp,
                 registration = whoisResponse.Registration,
@@ -45,6 +52,8 @@ public class SqliteWhoisResponsesRepository(SqliteConnection connection) : Sqlit
         var row = await Connection.QuerySingleOrDefaultAsync<WhoisResponseReadEntry>($"""
             SELECT
                 D.{nameof(DomainRow.Domain)},
+                W.{nameof(WhoisResponseRow.SourceServer)},
+                W.{nameof(WhoisResponseRow.Status)},
                 W.{nameof(WhoisResponseRow.QueryTimestamp)},
                 W.{nameof(WhoisResponseRow.Registration)},
                 W.{nameof(WhoisResponseRow.Expiration)},
@@ -62,6 +71,8 @@ public class SqliteWhoisResponsesRepository(SqliteConnection connection) : Sqlit
         return new WhoisResponse
         {
             Domain = new Domain(row.Domain),
+            SourceServer = row.SourceServer,
+            Status = row.Status,
             Expiration = row.Expiration,
             QueryTimestamp = row.QueryTimestamp,
             RawResponse = row.RawResponse,
@@ -72,6 +83,10 @@ public class SqliteWhoisResponsesRepository(SqliteConnection connection) : Sqlit
     private class WhoisResponseReadEntry
     {
         public string Domain { get; set; }
+
+        public string SourceServer { get; set; }
+
+        public WhoisResponseStatus Status { get; set; }
 
         public DateTime QueryTimestamp { get; set; }
 

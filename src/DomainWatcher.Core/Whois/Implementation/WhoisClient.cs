@@ -1,4 +1,5 @@
-﻿using DomainWatcher.Core.Values;
+﻿using DomainWatcher.Core.Enums;
+using DomainWatcher.Core.Values;
 using DomainWatcher.Core.Whois.Contracts;
 using DomainWatcher.Core.Whois.Exceptions;
 using DomainWatcher.Core.Whois.Values;
@@ -14,10 +15,12 @@ public class WhoisClient(
     {
         var whoisServerUrl = await whoisServerUrlResolver.Resolve(domain.Tld);
 
+        if (whoisServerUrl != null) return new IsDomainSupportedResult { IsSupported = true };
+
         return new IsDomainSupportedResult
         {
-            WhoisServerUrl = whoisServerUrl,
-            IsSupported = whoisServerUrl != null && whoisResponseParser.DoesSupport(whoisServerUrl)
+            IsSupported = false,
+            Reason = $"Invalid TLD: {domain.Tld}"
         };
     }
 
@@ -30,11 +33,6 @@ public class WhoisClient(
             throw new InvalidOperationException($"Invalid tld: {domain.Tld}");
         }
 
-        if (!whoisResponseParser.DoesSupport(whoisServerUrl))
-        {
-            throw new NoParserForWhoisServerException(whoisServerUrl);
-        }
-
         var queryTimestamp = DateTime.UtcNow;
         var whoisResponse = await rawClient.GetResponse(whoisServerUrl, domain.FullName);
 
@@ -42,6 +40,18 @@ public class WhoisClient(
         {
             throw new UnexpectedWhoisResponseException(
                 $"Empty whois response from whois server url: {whoisServerUrl}", whoisResponse);
+        }
+
+        if (!whoisResponseParser.DoesSupport(whoisServerUrl))
+        {
+            return new WhoisResponse
+            {
+                Domain = domain,
+                QueryTimestamp = queryTimestamp,
+                RawResponse = whoisResponse,
+                Status = WhoisResponseStatus.ParserMissing,
+                SourceServer = whoisServerUrl
+            };
         }
 
         WhoisServerResponseParsed parsed;
@@ -58,8 +68,15 @@ public class WhoisClient(
                 ex);
         }
 
+        if (parsed.Status == WhoisResponseStatus.ParserMissing)
+        {
+            throw new InvalidOperationException($"Unexpected {WhoisResponseStatus.ParserMissing} status after parsing.");
+        }
+
         return new WhoisResponse
         {
+            SourceServer = whoisServerUrl,
+            Status = parsed.Status,
             Domain = domain,
             RawResponse = whoisResponse,
             QueryTimestamp = queryTimestamp,

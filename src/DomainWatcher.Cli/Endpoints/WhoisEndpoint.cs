@@ -31,27 +31,17 @@ public class WhoisEndpoint(
 
         var domainSupportedResult = await client.IsDomainSupported(domain);
 
-        if (domainSupportedResult.IsSupported)
+        if (!domainSupportedResult.IsSupported)
         {
-            latestAvailableWhoisResponse = await client.QueryAsync(domain);
-            await domainsRepository.Store(domain);
-            await whoisResponsesRepository.Add(latestAvailableWhoisResponse);
+            logger.LogInformation("Domain {DomainUrl} unsupported. Reason: {Reason}.", domain.FullName, domainSupportedResult.Reason);
 
-            return HttpResponse.PlainText(latestAvailableWhoisResponse.RawResponse.Trim());
+            return HttpResponse.BadRequestWithReason($"Domain not supported. Reason: {domainSupportedResult.Reason}");
         }
 
-        if (domainSupportedResult.WhoisServerUrl == null)
-        {
-            logger.LogInformation("Domain {DomainUrl} has invalid tld.", domain.FullName);
+        latestAvailableWhoisResponse = await client.QueryAsync(domain);
+        await domainsRepository.Store(domain);
+        await whoisResponsesRepository.Add(latestAvailableWhoisResponse);
 
-            return HttpResponse.BadRequestWithReason($"Invalid tld: {domain.Tld}");
-        }
-
-        logger.LogWarning(
-            "Domain {DomainUrl} with whois server url {WhoisServerUrl} is valid but not (yet) supported.",
-            domain.FullName,
-            domainSupportedResult.WhoisServerUrl);
-
-        return HttpResponse.BadRequestWithReason($"Tld '{domain.Tld}' with whois server url '{domainSupportedResult.WhoisServerUrl}' is valid but not (yet) supported.");
+        return HttpResponse.PlainText(latestAvailableWhoisResponse.RawResponse.Trim());
     }
 }
