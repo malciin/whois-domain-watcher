@@ -93,6 +93,17 @@ public class WhoisResponseParserTests
                 Registration = null,
                 Expiration = null
             };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("google.gg"),
+                Registration = new DateTime(2003, 4, 30, 0, 0, 0, DateTimeKind.Utc),
+                Expiration = new DateTime(
+                    // clunky but expiration date is relative to current year
+                    DateTime.UtcNow > new DateTime(DateTime.UtcNow.Year, 4, 30, 0, 0, 0, DateTimeKind.Utc)
+                        ? DateTime.UtcNow.Year + 1
+                        : DateTime.UtcNow.Year,
+                    4, 30, 0, 0, 0, DateTimeKind.Utc)
+            };
 
             var unexistingDomains = new[]
             {
@@ -103,7 +114,8 @@ public class WhoisResponseParserTests
                 "some-untaken-domain.io",
                 "some-untaken-domain.tv",
                 "some-untaken-domain-but-different-response.net",
-                "some-untaken-domain.eu"
+                "some-untaken-domain.eu",
+                "some-untaken-domain.gg"
             };
             foreach (var domain in unexistingDomains)
             {
@@ -131,7 +143,7 @@ public class WhoisResponseParserTests
 
         public static implicit operator TestCaseData(WhoisServerResponseTestCase testCase)
         {
-            return new TestCaseData([testCase]).SetArgDisplayNames(testCase.WhoisServerUrl, testCase.Domain.FullName);
+            return new TestCaseData([testCase]).SetArgDisplayNames(testCase.Domain.FullName, testCase.WhoisServerUrl);
         }
 
         private static readonly IReadOnlyDictionary<string, string> DefaultTldToWhoisServerUrl = new Dictionary<string, string>
@@ -143,6 +155,7 @@ public class WhoisResponseParserTests
             ["com"] = "whois.verisign-grs.com",
             ["io"] = "whois.nic.io",
             ["eu"] = "whois.eu",
+            ["gg"] = "whois.gg"
         };
     }
 }
