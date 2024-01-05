@@ -1,7 +1,9 @@
-﻿using DomainWatcher.Core;
-using DomainWatcher.Core.Whois.Contracts;
+﻿using DomainWatcher.Cli.Extensions;
+using DomainWatcher.Core;
+using DomainWatcher.Infrastructure.Cache.Memory;
 using DomainWatcher.Infrastructure.HttpServer;
 using DomainWatcher.Infrastructure.Sqlite;
+using DomainWatcher.Infrastructure.Sqlite.Cache;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -15,7 +17,8 @@ hostBuilder
     .ConfigureServices(x => x
         .AddCore()
         .AddSqlite()
-        .AddSqliteCacheFor<IWhoisServerUrlResolver>()
+        .AddCache<WhoisServerUrlResolverSqliteCache>() // longer persisted cache
+        .AddCache<WhoisServerUrlResolverMemoryCache>() // shortlived memcache
         .AddInternalHttpServer(x => x.Port = 8051)
         .UseEndpointsFromCurrentAssembly()
         .RegisterAsHostedService())

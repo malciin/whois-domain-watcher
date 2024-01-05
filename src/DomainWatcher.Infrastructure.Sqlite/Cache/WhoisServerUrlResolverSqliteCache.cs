@@ -36,7 +36,7 @@ public class WhoisServerUrlResolverSqliteCache : SqliteCacheService, IWhoisServe
 
         if (resolvedUrl != null)
         {
-            await SetCache(cacheKey, resolvedUrl, TimeSpan.FromDays(1));
+            await SetCache(cacheKey, resolvedUrl, TimeSpan.FromDays(7));
         }
 
         return resolvedUrl;
