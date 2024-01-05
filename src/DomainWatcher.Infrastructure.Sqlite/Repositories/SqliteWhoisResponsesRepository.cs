@@ -4,6 +4,7 @@ using DomainWatcher.Core.Repositories;
 using DomainWatcher.Core.Values;
 using DomainWatcher.Infrastructure.Sqlite.Abstract;
 using DomainWatcher.Infrastructure.Sqlite.Internal;
+using DomainWatcher.Infrastructure.Sqlite.Internal.Extensions;
 using DomainWatcher.Infrastructure.Sqlite.Internal.TableRows;
 using Microsoft.Data.Sqlite;
 
@@ -13,6 +14,11 @@ public class SqliteWhoisResponsesRepository(SqliteConnection connection) : Sqlit
 {
     public Task Add(WhoisResponse whoisResponse)
     {
+        if (whoisResponse.Id != 0)
+        {
+            throw new ArgumentException($"Cannot add {nameof(WhoisResponse)} with explicit {nameof(WhoisResponse.Id)} set to {whoisResponse.Id}");
+        }
+
         return Connection.ExecuteAsync($"""
             INSERT INTO {TableNames.WhoisResponses}
                 (
@@ -47,10 +53,24 @@ public class SqliteWhoisResponsesRepository(SqliteConnection connection) : Sqlit
             });
     }
 
+    public IAsyncEnumerable<long> GetWhoisResponsesIdsFor(Domain domain)
+    {
+        return Connection.AsyncRead($"""
+            SELECT W.{nameof(WhoisResponseRow.Id)}
+            FROM {TableNames.WhoisResponses} W
+            LEFT JOIN {TableNames.Domains} D ON W.{nameof(WhoisResponseRow.DomainId)} = D.{nameof(DomainRow.Id)}
+            WHERE D.{nameof(DomainRow.Domain)} = @domainName
+            ORDER BY W.{nameof(WhoisResponseRow.QueryTimestamp)}
+            """,
+            new { domainName = domain.FullName },
+            x => x.GetInt64(0));
+    }
+
     public async Task<WhoisResponse?> GetLatestFor(Domain domain)
     {
         var row = await Connection.QuerySingleOrDefaultAsync<WhoisResponseReadEntry>($"""
             SELECT
+                W.{nameof(WhoisResponseRow.Id)},
                 D.{nameof(DomainRow.Domain)},
                 W.{nameof(WhoisResponseRow.SourceServer)},
                 W.{nameof(WhoisResponseRow.Status)},
@@ -70,6 +90,7 @@ public class SqliteWhoisResponsesRepository(SqliteConnection connection) : Sqlit
 
         return new WhoisResponse
         {
+            Id = row.Id,
             Domain = new Domain(row.Domain),
             SourceServer = row.SourceServer,
             Status = row.Status,
@@ -82,6 +103,8 @@ public class SqliteWhoisResponsesRepository(SqliteConnection connection) : Sqlit
 
     private class WhoisResponseReadEntry
     {
+        public long Id { get; set; }
+
         public string Domain { get; set; }
 
         public string SourceServer { get; set; }

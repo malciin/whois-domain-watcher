@@ -21,6 +21,8 @@ public class HttpServerBuilder
 
         serviceCollection.AddSingleton(httpServerOptionsFunc);
         serviceCollection.AddSingleton<HttpServer>();
+        serviceCollection.AddSingleton<HttpServerInfo>();
+        serviceCollection.AddSingleton<IHttpServerInfo>(ctx => ctx.GetRequiredService<HttpServerInfo>());
     }
 
     public HttpServerBuilder UseEndpointsFromCurrentAssembly()

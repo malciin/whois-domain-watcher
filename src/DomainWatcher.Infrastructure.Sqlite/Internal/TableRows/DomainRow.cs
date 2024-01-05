@@ -2,7 +2,7 @@
 
 internal class DomainRow
 {
-    public int Id { get; set; }
+    public long Id { get; set; }
 
     public string Domain { get; set; }
 

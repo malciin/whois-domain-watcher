@@ -4,7 +4,9 @@ namespace DomainWatcher.Infrastructure.Sqlite.Internal.TableRows;
 
 internal class WhoisResponseRow
 {
-    public int DomainId { get; set; }
+    public long Id { get; set; }
+
+    public long DomainId { get; set; }
 
     public string SourceServer { get; set; }
 

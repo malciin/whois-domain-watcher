@@ -1,4 +1,4 @@
-﻿using DomainWatcher.Cli.Utils;
+﻿using DomainWatcher.Cli.Formatters;
 using DomainWatcher.Core.Contracts;
 using DomainWatcher.Core.Repositories;
 using DomainWatcher.Core.Values;
@@ -28,7 +28,9 @@ public class WatchDomainEndpoint(
 
         if (await domainsRepository.IsWatched(domain))
         {
-            return HttpResponse.PlainText($"{domain} is already watched! Status: " + WhoisResponseDescriptiveStatus.Get(latestAvailableWhoisResponse));
+            return HttpResponse.PlainText(
+                $"{domain} is already watched! Status:" +
+                WatchedDomainsResponseFormatter.GetDescriptiveStatus(latestAvailableWhoisResponse));
         }
 
         var domainSupportedResult = await client.IsDomainSupported(domain);
@@ -57,6 +59,8 @@ public class WatchDomainEndpoint(
         queryQueue.EnqueueNext(domain, latestAvailableWhoisResponse);
         logger.LogInformation("{DomainUrl} watched.", domain.FullName);
 
-        return HttpResponse.PlainText($"{domain} watched! Status: " + WhoisResponseDescriptiveStatus.Get(latestAvailableWhoisResponse));
+        return HttpResponse.PlainText(
+            $"{domain} watched! Status: " +
+            WatchedDomainsResponseFormatter.GetDescriptiveStatus(latestAvailableWhoisResponse));
     }
 }

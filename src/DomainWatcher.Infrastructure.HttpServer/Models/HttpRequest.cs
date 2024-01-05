@@ -19,7 +19,7 @@ public partial class HttpRequest
         ? userAgent
         : null;
 
-    [GeneratedRegex(@"(?<method>GET|POST|PATCH|DELETE|OPTIONS) (?<path>[/\-a-zA-Z0-9\.\?\&]+) HTTP/1.1")]
+    [GeneratedRegex(@"(?<method>GET|POST|PATCH|DELETE|OPTIONS) (?<path>[/\-a-zA-Z0-9\.\?\&\*\+]+) HTTP/1.1")]
     private static partial Regex GetHttp11HeaderGeneratedRegex();
 
     [GeneratedRegex("(?<key>.+)?: (?<value>.*)")]

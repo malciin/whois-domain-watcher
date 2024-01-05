@@ -19,6 +19,7 @@ hostBuilder
         .AddSqlite()
         .AddCache<WhoisServerUrlResolverSqliteCache>() // longer persisted cache
         .AddCache<WhoisServerUrlResolverMemoryCache>() // shortlived memcache
+        .AddCli()
         .AddInternalHttpServer(x => x.Port = 8051)
         .UseEndpointsFromCurrentAssembly()
         .RegisterAsHostedService())

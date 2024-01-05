@@ -6,7 +6,7 @@ namespace DomainWatcher.Infrastructure.Sqlite.IntegrationTests;
 [Parallelizable(ParallelScope.All)]
 public class SqliteDbMigratorTests : SqliteIntegrationTestFixture
 {
-    private const int ExpectedVersion = 2;
+    private const int ExpectedVersion = 3;
     private SqliteDbMigrator migrator;
 
     protected override void AdditionalSetupSteps()

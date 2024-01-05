@@ -18,4 +18,18 @@ internal static class SqliteConnectionExtensions
             yield return mapFunc(reader);
         }
     }
+
+    internal static async IAsyncEnumerable<T> AsyncRead<T>(
+        this SqliteConnection sqliteConnection,
+        string query,
+        object param,
+        Func<DbDataReader, T> mapFunc)
+    {
+        using var reader = await sqliteConnection.ExecuteReaderAsync(query, param: param);
+
+        while (await reader.ReadAsync())
+        {
+            yield return mapFunc(reader);
+        }
+    }
 }

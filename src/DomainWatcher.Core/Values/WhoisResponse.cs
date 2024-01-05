@@ -4,6 +4,8 @@ namespace DomainWatcher.Core.Values;
 
 public class WhoisResponse
 {
+    public long Id { get; init; }
+
     public required Domain Domain { get; init; }
 
     public required string SourceServer { get; init; }

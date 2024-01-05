@@ -42,6 +42,6 @@ public class WhoisEndpoint(
         await domainsRepository.Store(domain);
         await whoisResponsesRepository.Add(latestAvailableWhoisResponse);
 
-        return HttpResponse.PlainText(latestAvailableWhoisResponse.RawResponse.Trim());
+        return HttpResponse.PlainText(latestAvailableWhoisResponse.RawResponse.TrimEnd());
     }
 }
