@@ -45,22 +45,26 @@ public class DomainsQueryQueue : IDomainsQueryQueue
         if (latestResponse == null)
         {
             Enqueue(domain, TimeSpan.Zero);
+            return;
         }
-        else if (latestResponse.IsAvailable)
+
+        var queriedAgo = DateTime.UtcNow - latestResponse.QueryTimestamp;
+
+        if (latestResponse.IsAvailable)
         {
-            Enqueue(domain, TimeSpan.FromHours(12));
+            Enqueue(domain, TimeSpan.FromHours(12) - queriedAgo);
         }
         else if (latestResponse.Status == WhoisResponseStatus.TakenButTimestampsHidden)
         {
-            Enqueue(domain, TimeSpan.FromDays(1));
+            Enqueue(domain, TimeSpan.FromDays(1) - queriedAgo);
         }
         else if (latestResponse.Status == WhoisResponseStatus.ParserMissing)
         {
-            Enqueue(domain, whoisResponseParser.DoesSupport(latestResponse.SourceServer) ? TimeSpan.Zero : TimeSpan.FromDays(7));
+            Enqueue(domain, whoisResponseParser.DoesSupport(latestResponse.SourceServer) ? TimeSpan.Zero : TimeSpan.FromDays(7) - queriedAgo);
         }
         else
         {
-            Enqueue(domain, TimeSpanMath.Min(latestResponse.Expiration!.Value - DateTime.UtcNow, TimeSpan.FromDays(7)));
+            Enqueue(domain, TimeSpanMath.Min(latestResponse.Expiration!.Value - DateTime.UtcNow, TimeSpan.FromDays(7) - queriedAgo));
         }
     }
 
