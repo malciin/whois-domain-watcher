@@ -8,10 +8,20 @@ public static class ServiceCollectionExtensions
         this IServiceCollection serviceCollection,
         Action<HttpServerOptions> mutator)
     {
-        var httpServerOptions = new HttpServerOptions();
+        return AddInternalHttpServer(serviceCollection, (_, x) => mutator(x));
+    }
 
-        mutator(httpServerOptions);
+    public static HttpServerBuilder AddInternalHttpServer(
+        this IServiceCollection serviceCollection,
+        Action<IServiceProvider, HttpServerOptions> mutator)
+    {
+        var options = new HttpServerOptions();
 
-        return new HttpServerBuilder(serviceCollection, _ => httpServerOptions);
+        return new HttpServerBuilder(serviceCollection, s =>
+        {
+            mutator(s, options);
+
+            return options;
+        });
     }
 }

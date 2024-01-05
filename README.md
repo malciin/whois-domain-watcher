@@ -20,7 +20,9 @@ It's intended to be used with any cli http client like `cURL` on linux or `Invok
 
 ## Usage
 
-For sake of simplicity I've assume url to be `localhost:8051` and - if applicable - domain parameter is `google.com`.
+To run daemon type `./domains-watcher --port XYZ` where `XYZ` is the port number.
+
+For sake of simplicity I've assume port to be `8051` and - if applicable - domain parameter is `google.com`.
 
 | PowerShell | cURL | Description | 
 |-|-|-|

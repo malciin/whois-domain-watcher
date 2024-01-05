@@ -4,6 +4,7 @@ using DomainWatcher.Infrastructure.Cache.Memory;
 using DomainWatcher.Infrastructure.HttpServer;
 using DomainWatcher.Infrastructure.Sqlite;
 using DomainWatcher.Infrastructure.Sqlite.Cache;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -13,6 +14,7 @@ using Serilog.Events;
 var hostBuilder = Host.CreateDefaultBuilder(args);
 
 hostBuilder
+    .ConfigureAppConfiguration(x => x.AddCommandLine(args))
     .ConfigureLogging((_, logging) => logging.AddSerilog())
     .ConfigureServices(x => x
         .AddCore()
@@ -20,7 +22,12 @@ hostBuilder
         .AddCache<WhoisServerUrlResolverSqliteCache>() // longer persisted cache
         .AddCache<WhoisServerUrlResolverMemoryCache>() // shortlived memcache
         .AddCli()
-        .AddInternalHttpServer(x => x.Port = 8051)
+        .AddInternalHttpServer((s, options) =>
+        {
+            var port = s.GetRequiredService<IConfiguration>()["port"];
+
+            options.Port = port != null ? int.Parse(port) : 0;
+        })
         .UseEndpointsFromCurrentAssembly()
         .RegisterAsHostedService())
     .UseSerilog((_, configuration) => configuration
@@ -32,10 +39,15 @@ hostBuilder
         .Enrich.WithComputed("SourceContextName", "Substring(SourceContext, LastIndexOf(SourceContext, '.') + 1)"));
 
 using var host = hostBuilder.Build();
+var logger = host.Services.GetRequiredService<ILogger<Program>>();
+
+if (host.Services.GetRequiredService<IConfiguration>()["port"] == null)
+{
+    logger.LogWarning("No --port specified. Http server will start on port provided by the system. Try run specifyng port like --port 8080");
+}
 
 await host.Services.GetRequiredService<SqliteDbMigrator>().MigrateIfNecessary();
 
-var logger = host.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("Press CTRL+C to stop.");
 
 await host.RunAsync();

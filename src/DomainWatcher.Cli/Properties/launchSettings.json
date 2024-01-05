@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DomainWatcher.Cli": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 8051"
+    }
+  }
+}
