@@ -1,5 +1,7 @@
 ﻿using DomainWatcher.Cli.Extensions;
+using DomainWatcher.Cli.Internal.LogEnrichers;
 using DomainWatcher.Core;
+using DomainWatcher.Core.Whois.Contracts;
 using DomainWatcher.Infrastructure.Cache.Memory;
 using DomainWatcher.Infrastructure.HttpServer;
 using DomainWatcher.Infrastructure.Sqlite;
@@ -19,24 +21,17 @@ hostBuilder
     .ConfigureServices(x => x
         .AddCore()
         .AddSqlite()
-        .AddCache<WhoisServerUrlResolverSqliteCache>() // longer persisted cache
-        .AddCache<WhoisServerUrlResolverMemoryCache>() // shortlived memcache
-        .AddCli()
-        .AddInternalHttpServer((s, options) =>
-        {
-            var port = s.GetRequiredService<IConfiguration>()["port"];
-
-            options.Port = port != null ? int.Parse(port) : 0;
-        })
-        .UseEndpointsFromCurrentAssembly()
-        .RegisterAsHostedService())
+        .AddCache<IWhoisServerUrlResolver, WhoisServerUrlResolverSqliteCache>() // longer persisted cache
+        .AddCache<IWhoisServerUrlResolver, WhoisServerUrlResolverMemoryCache>() // shortlived memcache
+        .AddHttpServer()
+        .AddCliServices())
     .UseSerilog((_, configuration) => configuration
         .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContextName}] {Message:lj}{NewLine}{Exception}")
         .MinimumLevel.Override("Microsoft.Extensions.Hosting", LogEventLevel.Warning)
         .MinimumLevel.Override("Microsoft.Hosting", LogEventLevel.Warning)
         .MinimumLevel.Debug()
         .Enrich.FromLogContext()
-        .Enrich.WithComputed("SourceContextName", "Substring(SourceContext, LastIndexOf(SourceContext, '.') + 1)"));
+        .Enrich.With<SourceContextNameEnricher>());
 
 using var host = hostBuilder.Build();
 var logger = host.Services.GetRequiredService<ILogger<Program>>();

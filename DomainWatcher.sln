@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Cli", "src\Do
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Core", "src\DomainWatcher.Core\DomainWatcher.Core.csproj", "{BCA63218-7E18-4090-B092-1DB14EDEB3F0}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1CCCEB6E-33CA-4327-A35C-F01C10DCA13D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{1CCCEB6E-33CA-4327-A35C-F01C10DCA13D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{588ABCD0-C0CF-467A-87CE-22985440F69F}"
 	ProjectSection(SolutionItems) = preProject
@@ -28,7 +28,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Infrastructur
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Infrastructure.Cache.Memory", "src\DomainWatcher.Infrastructure.Cache.Memory\DomainWatcher.Infrastructure.Cache.Memory.csproj", "{79D86842-833B-4AD4-B812-10D848F42356}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.E2ETests", "tests\DomainWatcher.E2ETests\DomainWatcher.E2ETests.csproj", "{C71A00D2-BDC3-4A83-A2F9-72CEEFE752B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.E2ETests", "tests\DomainWatcher.E2ETests\DomainWatcher.E2ETests.csproj", "{C71A00D2-BDC3-4A83-A2F9-72CEEFE752B5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Infrastructure.Sqlite.SourceGenerator", "src\DomainWatcher.Infrastructure.Sqlite.SourceGenerator\DomainWatcher.Infrastructure.Sqlite.SourceGenerator.csproj", "{B87C2C5A-8BFF-4264-898E-B67AE4925FDA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.CodeGenerator.Common", "src\DomainWatcher.CodeGenerator.Common\DomainWatcher.CodeGenerator.Common.csproj", "{89AA16B3-AA5A-492F-B669-F0F491BB7177}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source Generators", "Source Generators", "{261F75EC-EE4F-44F3-81CF-D6E679864849}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.Core.SourceGenerator", "src\DomainWatcher.Core.SourceGenerator\DomainWatcher.Core.SourceGenerator.csproj", "{5A90DFD6-9FCC-472E-9627-B279EFCB9B7F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.Cli.SourceGenerator", "src\DomainWatcher.Cli.SourceGenerator\DomainWatcher.Cli.SourceGenerator.csproj", "{7210159F-BC4A-41CF-97EE-B9FCA49B4ED9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -76,6 +86,22 @@ Global
 		{C71A00D2-BDC3-4A83-A2F9-72CEEFE752B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C71A00D2-BDC3-4A83-A2F9-72CEEFE752B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C71A00D2-BDC3-4A83-A2F9-72CEEFE752B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B87C2C5A-8BFF-4264-898E-B67AE4925FDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B87C2C5A-8BFF-4264-898E-B67AE4925FDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B87C2C5A-8BFF-4264-898E-B67AE4925FDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B87C2C5A-8BFF-4264-898E-B67AE4925FDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{89AA16B3-AA5A-492F-B669-F0F491BB7177}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89AA16B3-AA5A-492F-B669-F0F491BB7177}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89AA16B3-AA5A-492F-B669-F0F491BB7177}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89AA16B3-AA5A-492F-B669-F0F491BB7177}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A90DFD6-9FCC-472E-9627-B279EFCB9B7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A90DFD6-9FCC-472E-9627-B279EFCB9B7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A90DFD6-9FCC-472E-9627-B279EFCB9B7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A90DFD6-9FCC-472E-9627-B279EFCB9B7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7210159F-BC4A-41CF-97EE-B9FCA49B4ED9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7210159F-BC4A-41CF-97EE-B9FCA49B4ED9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7210159F-BC4A-41CF-97EE-B9FCA49B4ED9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7210159F-BC4A-41CF-97EE-B9FCA49B4ED9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -86,6 +112,10 @@ Global
 		{E5A64623-0231-479F-8E10-60FB67CCF158} = {1CCCEB6E-33CA-4327-A35C-F01C10DCA13D}
 		{8A161A54-A8BA-42C7-8A7C-FD4BC05D0FF0} = {1CCCEB6E-33CA-4327-A35C-F01C10DCA13D}
 		{C71A00D2-BDC3-4A83-A2F9-72CEEFE752B5} = {1CCCEB6E-33CA-4327-A35C-F01C10DCA13D}
+		{B87C2C5A-8BFF-4264-898E-B67AE4925FDA} = {261F75EC-EE4F-44F3-81CF-D6E679864849}
+		{89AA16B3-AA5A-492F-B669-F0F491BB7177} = {261F75EC-EE4F-44F3-81CF-D6E679864849}
+		{5A90DFD6-9FCC-472E-9627-B279EFCB9B7F} = {261F75EC-EE4F-44F3-81CF-D6E679864849}
+		{7210159F-BC4A-41CF-97EE-B9FCA49B4ED9} = {261F75EC-EE4F-44F3-81CF-D6E679864849}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6115D4D4-ACA3-45B9-8388-529747C8614D}

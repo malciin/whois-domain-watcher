@@ -5,6 +5,10 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishSingleFile>true</PublishSingleFile>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>_GeneratedSource</CompilerGeneratedFilesOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,10 +23,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DomainWatcher.Cli.SourceGenerator\DomainWatcher.Cli.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\DomainWatcher.Core\DomainWatcher.Core.csproj" />
     <ProjectReference Include="..\DomainWatcher.Infrastructure.Cache.Memory\DomainWatcher.Infrastructure.Cache.Memory.csproj" />
     <ProjectReference Include="..\DomainWatcher.Infrastructure.HttpServer\DomainWatcher.Infrastructure.HttpServer.csproj" />
     <ProjectReference Include="..\DomainWatcher.Infrastructure.Sqlite\DomainWatcher.Infrastructure.Sqlite.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="_GeneratedSource/**/*.cs" />
+    <None Include="_GeneratedSource/**/*.cs" />
   </ItemGroup>
 
 </Project>

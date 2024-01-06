@@ -3,7 +3,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using DomainWatcher.Infrastructure.HttpServer.Constants;
-using DomainWatcher.Infrastructure.HttpServer.Values;
+using DomainWatcher.Infrastructure.HttpServer.Internal.Values;
 
 namespace DomainWatcher.Infrastructure.HttpServer.Models;
 
@@ -11,7 +11,7 @@ public sealed class HttpResponse
 {
     public required HttpStatusCode Code { get; init; }
 
-    public ContentResponse? Response { get; init; }
+    internal ContentResponse? Response { get; init; }
 
     public IDictionary<string, string> Headers { get; } = new Dictionary<string, string>();
 

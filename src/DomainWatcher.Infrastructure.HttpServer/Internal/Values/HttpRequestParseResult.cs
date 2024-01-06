@@ -1,8 +1,8 @@
 ﻿using DomainWatcher.Infrastructure.HttpServer.Models;
 
-namespace DomainWatcher.Infrastructure.HttpServer.Values;
+namespace DomainWatcher.Infrastructure.HttpServer.Internal.Values;
 
-public class HttpRequestParseResult
+internal class HttpRequestParseResult
 {
     public required bool Success { get; init; }
 

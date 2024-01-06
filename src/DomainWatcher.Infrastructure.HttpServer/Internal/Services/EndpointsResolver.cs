@@ -1,34 +1,33 @@
-﻿using System.Reflection;
-using System.Text.RegularExpressions;
-using DomainWatcher.Infrastructure.HttpServer.Contracts;
+﻿using System.Text.RegularExpressions;
+using DomainWatcher.Infrastructure.HttpServer.Internal.Values;
 using DomainWatcher.Infrastructure.HttpServer.Models;
+using Microsoft.Extensions.Logging;
 
-namespace DomainWatcher.Infrastructure.HttpServer.Values;
+namespace DomainWatcher.Infrastructure.HttpServer.Internal.Services;
 
-public class EndpointsCollection
+internal class EndpointsResolver
 {
-    internal static Dictionary<Type, Regex> UrlRegexByEndpoint = new();
+    internal static Dictionary<Type, Regex> UrlRegexByEndpoint = [];
 
     private readonly Dictionary<(HttpMethod, string), Type> endpoints;
     private readonly Dictionary<HttpMethod, List<Type>> regexPathEndpoints;
 
-    public EndpointsCollection(IEnumerable<Type> endpointTypes)
+    internal EndpointsResolver(
+        IEnumerable<EndpointEntry> endpointEntries,
+        ILogger<EndpointsResolver> logger)
     {
-        var getEndpointParametersMethod = GetType()
-            .GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
-            .Single(x => x.Name.Contains(nameof(GetEndpointParameters)));
-
         endpoints = [];
         regexPathEndpoints = [];
 
-        foreach (var endpointType in endpointTypes)
+        foreach (var endpointEntry in endpointEntries)
         {
-            var (method, path) = ((HttpMethod, string))getEndpointParametersMethod
-                .MakeGenericMethod(endpointType)
-                .Invoke(null, null)!;
+            var path = endpointEntry.Path;
+            var method = endpointEntry.Method;
+            var endpointType = endpointEntry.EndpointType;
 
             if (path[0] == '/')
             {
+                logger.LogDebug("{Method} {Path} mapped to {Type}", method, path, endpointType.Name);
                 endpoints.Add((method, path), endpointType);
 
                 continue;
@@ -49,10 +48,12 @@ public class EndpointsCollection
             {
                 regexPathEndpoints[method] = [endpointType];
             }
+
+            logger.LogDebug("{Method} {Path} mapped to {Type}", method, path, endpointType.Name);
         }
     }
 
-    public bool TryGetFor(HttpRequest request, out Type? type)
+    public bool TryResolve(HttpRequest request, out Type? type)
     {
         if (endpoints.TryGetValue((request.Method, request.RelativeUrl), out type)) return true;
 
@@ -61,10 +62,5 @@ public class EndpointsCollection
             ?.FirstOrDefault(x => UrlRegexByEndpoint[x].IsMatch(request.RelativeUrl));
 
         return type != null;
-    }
-
-    private static (HttpMethod, string) GetEndpointParameters<T>() where T : IHttpEndpoint
-    {
-        return (T.Method, T.Path);
     }
 }

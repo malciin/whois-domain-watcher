@@ -1,6 +1,6 @@
-﻿namespace DomainWatcher.Infrastructure.HttpServer.Values;
+﻿namespace DomainWatcher.Infrastructure.HttpServer.Internal.Values;
 
-public class ContentResponse
+internal class ContentResponse
 {
     public required string ContentType { get; init; }
 

@@ -1,17 +1,12 @@
-﻿using DomainWatcher.Core.Extensions;
-using DomainWatcher.Core.Whois.Contracts;
+﻿using DomainWatcher.Core.Whois.Contracts;
 using DomainWatcher.Core.Whois.Parsers;
 using DomainWatcher.Core.Whois.Values;
 
 namespace DomainWatcher.Core.Whois.Implementation;
 
-public class WhoisResponseParser : IWhoisResponseParser
+public partial class WhoisResponseParser : IWhoisResponseParser
 {
-    private static readonly IReadOnlyDictionary<string, WhoisServerResponseParser> ParsersByWhoisServerUrl = typeof(WhoisServerResponseParser)
-        .Assembly
-        .GetInstantiableTypesAssignableTo<WhoisServerResponseParser>()
-        .Select(Activator.CreateInstance)
-        .Cast<WhoisServerResponseParser>()
+    private static readonly IReadOnlyDictionary<string, WhoisServerResponseParser> ParsersByWhoisServerUrl = GetParsers()
         .SelectMany(x => x.GetSupportedWhoisServers().Select(tld => KeyValuePair.Create(tld, x)))
         .ToDictionary(x => x.Key, v => v.Value);
 
@@ -23,4 +18,6 @@ public class WhoisResponseParser : IWhoisResponseParser
     {
         return ParsersByWhoisServerUrl[whoisServerUrl].Parse(whoisResponse);
     }
+
+    private static partial IEnumerable<WhoisServerResponseParser> GetParsers();
 }

@@ -1,15 +1,17 @@
-﻿using System.Reflection;
-using DomainWatcher.Core.Extensions;
+﻿using System.Diagnostics.CodeAnalysis;
 using DomainWatcher.Infrastructure.HttpServer.Contracts;
-using DomainWatcher.Infrastructure.HttpServer.Middlewares;
-using DomainWatcher.Infrastructure.HttpServer.Values;
+using DomainWatcher.Infrastructure.HttpServer.Internal.Middlewares;
+using DomainWatcher.Infrastructure.HttpServer.Internal.Services;
+using DomainWatcher.Infrastructure.HttpServer.Internal.Values;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace DomainWatcher.Infrastructure.HttpServer;
 
 public class HttpServerBuilder
 {
     private readonly IServiceCollection serviceCollection;
+    private readonly List<EndpointEntry> endpointEntries;
 
     private bool endpointsFeatureEnabled = false;
 
@@ -18,6 +20,7 @@ public class HttpServerBuilder
         Func<IServiceProvider, HttpServerOptions> httpServerOptionsFunc)
     {
         this.serviceCollection = serviceCollection;
+        this.endpointEntries = [];
 
         serviceCollection.AddSingleton(httpServerOptionsFunc);
         serviceCollection.AddSingleton<HttpServer>();
@@ -25,31 +28,26 @@ public class HttpServerBuilder
         serviceCollection.AddSingleton<IHttpServerInfo>(ctx => ctx.GetRequiredService<HttpServerInfo>());
     }
 
-    public HttpServerBuilder UseEndpointsFromCurrentAssembly()
+    public HttpServerBuilder UseEndpoint<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
+        where T : class, IHttpEndpoint
     {
-        return UseEnpointsFromAssembly(Assembly.GetCallingAssembly());
-    }
-
-    public HttpServerBuilder UseEnpointsFromAssembly(Assembly assembly)
-    {
-        return UseEndpoints(assembly.GetInstantiableTypesAssignableTo(typeof(IHttpEndpoint)).ToArray());
-    }
-
-    public HttpServerBuilder UseEndpoints(params Type[] endpointTypes)
-    {
-        endpointTypes.ForEach(x => serviceCollection.AddScoped(x));
-
         EnableEndpointsFeature();
+
+        endpointEntries.Add(new EndpointEntry
+        {
+            Path = T.Path,
+            Method = T.Method,
+            EndpointType = typeof(T)
+        });
+        serviceCollection.AddScoped<T>();
 
         return this;
     }
 
-    public HttpServerBuilder UseMiddleware<T>()
-        where T : class, IRequestMiddleware => UseMiddleware(typeof(T));
-
-    public HttpServerBuilder UseMiddleware(Type middlewareType)
+    public HttpServerBuilder UseMiddleware<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
+        where T : class, IRequestMiddleware
     {
-        serviceCollection.AddSingleton(typeof(IRequestMiddleware), middlewareType);
+        serviceCollection.AddSingleton<IRequestMiddleware, T>();
 
         return this;
     }
@@ -68,9 +66,9 @@ public class HttpServerBuilder
             return;
         }
 
-        serviceCollection.AddSingleton(_ => new EndpointsCollection(serviceCollection
-            .Where(x => x.ImplementationType != null && x.ImplementationType.IsAssignableTo(typeof(IHttpEndpoint)))
-            .Select(x => x.ImplementationType!)));
+        serviceCollection.AddSingleton(ctx => new EndpointsResolver(
+            endpointEntries,
+            ctx.GetRequiredService<ILogger<EndpointsResolver>>()));
 
         UseMiddleware<EndpointDispatcherMiddleware>();
 

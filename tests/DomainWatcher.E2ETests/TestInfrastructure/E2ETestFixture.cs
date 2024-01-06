@@ -1,5 +1,6 @@
 ﻿using DomainWatcher.Cli.Extensions;
 using DomainWatcher.Core;
+using DomainWatcher.Core.Whois.Contracts;
 using DomainWatcher.Infrastructure.Cache.Memory;
 using DomainWatcher.Infrastructure.HttpServer;
 using DomainWatcher.Infrastructure.HttpServer.Contracts;
@@ -36,12 +37,10 @@ public abstract class E2ETestFixture
             .ConfigureServices(x => x
                 .AddCore()
                 .AddSqlite($"Data Source={dbName}")
-                .AddCache<WhoisServerUrlResolverSqliteCache>() // longer persisted cache
-                .AddCache<WhoisServerUrlResolverMemoryCache>() // shortlived memcache
-                .AddCli()
-                .AddInternalHttpServer(x => x.Port = 0)
-                .UseEnpointsFromAssembly(typeof(Cli.Extensions.ServiceCollectionExtensions).Assembly)
-                .RegisterAsHostedService())
+                .AddCache<IWhoisServerUrlResolver, WhoisServerUrlResolverSqliteCache>() // longer persisted cache
+                .AddCache<IWhoisServerUrlResolver, WhoisServerUrlResolverMemoryCache>() // shortlived memcache
+                .AddHttpServer()
+                .AddCliServices())
             .UseSerilog((_, configuration) => configuration
                 .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContextName}] {Message:lj}{NewLine}{Exception}")
                 .MinimumLevel.Override("Microsoft.Extensions.Hosting", LogEventLevel.Warning)

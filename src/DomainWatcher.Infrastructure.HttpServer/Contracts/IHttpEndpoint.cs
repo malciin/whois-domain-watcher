@@ -1,5 +1,5 @@
-﻿using DomainWatcher.Infrastructure.HttpServer.Models;
-using DomainWatcher.Infrastructure.HttpServer.Values;
+﻿using DomainWatcher.Infrastructure.HttpServer.Internal.Services;
+using DomainWatcher.Infrastructure.HttpServer.Models;
 
 namespace DomainWatcher.Infrastructure.HttpServer.Contracts;
 
@@ -26,7 +26,7 @@ public static class IHttpEndpointExtensions
     public static string ExtractRegexGroup<T>(this T endpoint, string url, string groupName)
         where T : IHttpEndpoint
     {
-        if (EndpointsCollection.UrlRegexByEndpoint.TryGetValue(typeof(T), out var regex))
+        if (EndpointsResolver.UrlRegexByEndpoint.TryGetValue(typeof(T), out var regex))
         {
             return regex.Match(url).Groups[groupName].Value!;
         }

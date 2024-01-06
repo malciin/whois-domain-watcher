@@ -1,14 +1,12 @@
 ﻿using Dapper;
-using DomainWatcher.Core.Extensions;
 using DomainWatcher.Infrastructure.Sqlite.Abstract;
-using DomainWatcher.Infrastructure.Sqlite.Internal.Migrations;
 using DomainWatcher.Infrastructure.Sqlite.Internal.Values;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 
 namespace DomainWatcher.Infrastructure.Sqlite;
 
-public class SqliteDbMigrator(
+public partial class SqliteDbMigrator(
     SqliteConnection connection,
     ILogger<SqliteDbMigrator> logger) : SqliteService(connection)
 {
@@ -19,7 +17,7 @@ public class SqliteDbMigrator(
         await Connection.OpenAsync();
 
         var version = await GetCurrentVersion();
-        var migrationsToRun = GetMigrationsDetails().Where(x => x.Number > version);
+        var migrationsToRun = GetMigrations().Where(x => x.Number > version);
 
         if (!migrationsToRun.Any())
         {
@@ -64,11 +62,5 @@ public class SqliteDbMigrator(
             """);
     }
 
-    private IOrderedEnumerable<MigrationEntry> GetMigrationsDetails()
-    {
-        return typeof(Migration).Assembly
-            .GetInstantiableTypesAssignableTo<Migration>()
-            .Select(type => new MigrationEntry(type))
-            .OrderBy(x => x.Number);
-    }
+    private static partial IEnumerable<MigrationEntry> GetMigrations();
 }

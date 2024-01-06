@@ -1,4 +1,5 @@
-﻿using DomainWatcher.Infrastructure.HttpServer.Contracts;
+﻿using DomainWatcher.Core.Extensions;
+using DomainWatcher.Infrastructure.HttpServer.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -28,7 +29,11 @@ public class HttpServerTestsWrapper : IAsyncDisposable
 
         if (endpoints?.Any() == true)
         {
-            serverBuilder.UseEndpoints(endpoints.ToArray());
+            var method = serverBuilder
+                .GetType()
+                .GetMethod(nameof(HttpServerBuilder.UseEndpoint))!;
+
+            endpoints.ForEach(x => method.MakeGenericMethod(x).Invoke(serverBuilder, null));
         }
 
         serviceProvider = serviceCollection.BuildServiceProvider();

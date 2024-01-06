@@ -1,7 +1,7 @@
-﻿using DomainWatcher.Infrastructure.HttpServer.Values;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Text;
+using DomainWatcher.Infrastructure.HttpServer.Internal.Values;
 
 namespace DomainWatcher.Infrastructure.HttpServer.Models;
 
@@ -28,7 +28,7 @@ public partial class HttpRequest
     private static readonly Regex http11HeaderRegex = GetHttp11HeaderGeneratedRegex();
     private static readonly Regex httpRequestHeadersRegex = GetHttpRequestHeadersGeneratedRegex();
 
-    public static async Task<HttpRequestParseResult> TryParseAsync(
+    internal static async Task<HttpRequestParseResult> TryParseAsync(
         NetworkStream networkStream,
         CancellationToken cancellationToken)
     {
