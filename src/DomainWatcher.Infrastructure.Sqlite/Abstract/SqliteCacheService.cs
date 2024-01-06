@@ -1,5 +1,6 @@
-﻿using System.Text;
-using Dapper;
+﻿using System.Data;
+using System.Text;
+using DomainWatcher.Infrastructure.Sqlite.Extensions;
 using DomainWatcher.Infrastructure.Sqlite.Internal;
 using DomainWatcher.Infrastructure.Sqlite.Internal.TableRows;
 using Microsoft.Data.Sqlite;
@@ -14,13 +15,25 @@ public abstract class SqliteCacheService : SqliteService
 
     protected async Task<byte[]?> GetBytesFromCacheOrNull(string key)
     {
-        var cacheEntry = await Connection.QuerySingleOrDefaultAsync<CacheRow>($"""
-            SELECT *
+        var cacheEntry = await Connection.QuerySingleOrDefaultAsync($"""
+            SELECT
+                {nameof(CacheRow.Key)},
+                {nameof(CacheRow.Value)}
             FROM {TableNames.Cache}
             WHERE {nameof(CacheRow.Key)} = @key
               AND {nameof(CacheRow.ExpirationTimestamp)} > @timestamp
             """,
-            new { key = key, timestamp = DateTime.UtcNow });
+            new Dictionary<string, (DbType, object?)>
+            {
+                ["key"] = (DbType.String, key),
+                ["timestamp"] = (DbType.DateTime, DateTime.UtcNow)
+            },
+            x => new CacheRow
+            {
+                Key = x.GetString(0),
+                Value = x.GetFieldValue<byte[]>(1)
+            },
+            null);
      
         return cacheEntry?.Value;
     }
@@ -53,12 +66,12 @@ public abstract class SqliteCacheService : SqliteService
                 {nameof(CacheRow.Timestamp)} = @timestamp,
                 {nameof(CacheRow.ExpirationTimestamp)} = @expirationTimestamp;
             """,
-            new
+            new Dictionary<string, (DbType, object?)>
             {
-                key = key,
-                value = value,
-                timestamp = cacheTimestamp,
-                expirationTimestamp = cacheTimestamp + timeToLive
+                ["key"] = (DbType.String, key),
+                ["value"] = (DbType.Binary, value),
+                ["timestamp"] = (DbType.DateTime2, cacheTimestamp),
+                ["expirationTimestamp"] = (DbType.DateTime2, cacheTimestamp + timeToLive)
             });
     }
 

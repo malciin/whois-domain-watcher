@@ -1,5 +1,6 @@
-﻿using Dapper;
+﻿using System.Data;
 using DomainWatcher.Infrastructure.Sqlite.Abstract;
+using DomainWatcher.Infrastructure.Sqlite.Extensions;
 using DomainWatcher.Infrastructure.Sqlite.Internal.Values;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
@@ -28,7 +29,7 @@ public partial class SqliteDbMigrator(
 
         foreach (var migration in migrationsToRun)
         {
-            using var transaction = await Connection.BeginTransactionAsync();
+            using var transaction = Connection.BeginTransaction();
 
             await migration.Run(Connection, transaction);
             await Connection.ExecuteAsync("""
@@ -40,7 +41,12 @@ public partial class SqliteDbMigrator(
 
                 INSERT INTO __Migrations(Version, MigrationName, AppliedOn) VALUES (@version, @migrationName, @appliedOn)
                 """,
-                new { version = migration.Number, migrationName = migration.Name, appliedOn = DateTime.UtcNow },
+                new Dictionary<string, (DbType, object?)>
+                {
+                    ["version"] = (DbType.Int32, migration.Number),
+                    ["migrationName"] = (DbType.String, migration.Name),
+                    ["appliedOn"] = (DbType.DateTime, DateTime.UtcNow)
+                },
                 transaction: transaction);
 
             await transaction.CommitAsync();
@@ -51,15 +57,19 @@ public partial class SqliteDbMigrator(
 
     public async Task<int> GetCurrentVersion()
     {
-        var migrationsTableDoesNotExist = string.IsNullOrEmpty(await Connection.QuerySingleOrDefaultAsync<string>("""
+        var migrationsTableDoesExists = await Connection.QuerySingleOrDefaultAsync("""
             SELECT name FROM sqlite_master WHERE type='table' AND name='__Migrations'
-            """));
+            """,
+            x => true,
+            false);
 
-        if (migrationsTableDoesNotExist) return 0;
+        if (!migrationsTableDoesExists) return 0;
 
-        return await Connection.QuerySingleOrDefaultAsync<int>("""
+        return await Connection.QuerySingleOrDefaultAsync("""
             SELECT Version FROM __Migrations ORDER BY Version DESC LIMIT(1);
-            """);
+            """,
+            x => x.GetInt32(0),
+            0);
     }
 
     private static partial IEnumerable<MigrationEntry> GetMigrations();

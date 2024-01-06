@@ -1,5 +1,6 @@
-﻿using Dapper;
+﻿using DomainWatcher.Infrastructure.Sqlite.Extensions;
 using DomainWatcher.Infrastructure.Sqlite.IntegrationTests.TestInfrastructure;
+using Microsoft.Data.Sqlite;
 
 namespace DomainWatcher.Infrastructure.Sqlite.IntegrationTests;
 
@@ -39,8 +40,10 @@ public class SqliteDbMigratorTests : SqliteIntegrationTestFixture
         }));
     }
 
-    private Task<IEnumerable<string>> GetTableNames()
+    private async Task<IEnumerable<string>> GetTableNames()
     {
-        return SqliteConnection.QueryAsync<string>("SELECT name FROM sqlite_master WHERE type='table';");
+        return await SqliteConnection
+            .AsyncRead("SELECT name FROM sqlite_master WHERE type='table';", x => x.GetString(0))
+            .ToListAsync();
     }
 }

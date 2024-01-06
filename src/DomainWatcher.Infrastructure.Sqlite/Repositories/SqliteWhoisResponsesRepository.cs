@@ -1,8 +1,9 @@
-﻿using Dapper;
+﻿using System.Data;
 using DomainWatcher.Core.Enums;
 using DomainWatcher.Core.Repositories;
 using DomainWatcher.Core.Values;
 using DomainWatcher.Infrastructure.Sqlite.Abstract;
+using DomainWatcher.Infrastructure.Sqlite.Extensions;
 using DomainWatcher.Infrastructure.Sqlite.Internal;
 using DomainWatcher.Infrastructure.Sqlite.Internal.Extensions;
 using DomainWatcher.Infrastructure.Sqlite.Internal.TableRows;
@@ -41,15 +42,15 @@ public class SqliteWhoisResponsesRepository(SqliteConnection connection) : Sqlit
                     @rawResponse
                 )
             """,
-            new
+            new Dictionary<string, (DbType, object?)>
             {
-                sourceServer = whoisResponse.SourceServer,
-                status = whoisResponse.Status,
-                domainName = whoisResponse.Domain.FullName,
-                queryTimestamp = whoisResponse.QueryTimestamp,
-                registration = whoisResponse.Registration,
-                expiration = whoisResponse.Expiration,
-                rawResponse = whoisResponse.RawResponse
+                ["sourceServer"] = (DbType.String, whoisResponse.SourceServer),
+                ["status"] = (DbType.Int32, whoisResponse.Status),
+                ["domainName"] = (DbType.String, whoisResponse.Domain.FullName),
+                ["queryTimestamp"] = (DbType.DateTime, whoisResponse.QueryTimestamp),
+                ["registration"] = (DbType.DateTime, whoisResponse.Registration),
+                ["expiration"] = (DbType.DateTime, whoisResponse.Expiration),
+                ["rawResponse"] = (DbType.String, whoisResponse.RawResponse)
             });
     }
 
@@ -62,13 +63,13 @@ public class SqliteWhoisResponsesRepository(SqliteConnection connection) : Sqlit
             WHERE D.{nameof(DomainRow.Domain)} = @domainName
             ORDER BY W.{nameof(WhoisResponseRow.QueryTimestamp)}
             """,
-            new { domainName = domain.FullName },
+            new Dictionary<string, (DbType, object?)> { ["domainName"] = (DbType.String, domain.FullName) },
             x => x.GetInt64(0));
     }
 
-    public async Task<WhoisResponse?> GetLatestFor(Domain domain)
+    public Task<WhoisResponse?> GetLatestFor(Domain domain)
     {
-        var row = await Connection.QuerySingleOrDefaultAsync<WhoisResponseReadEntry>($"""
+        return Connection.QuerySingleOrDefaultAsync($"""
             SELECT
                 W.{nameof(WhoisResponseRow.Id)},
                 D.{nameof(DomainRow.Domain)},
@@ -84,39 +85,18 @@ public class SqliteWhoisResponsesRepository(SqliteConnection connection) : Sqlit
             ORDER BY W.{nameof(WhoisResponseRow.QueryTimestamp)} DESC
             LIMIT 1
             """,
-            new { domainName = domain.FullName });
-
-        if (row == null) return null;
-
-        return new WhoisResponse
-        {
-            Id = row.Id,
-            Domain = new Domain(row.Domain),
-            SourceServer = row.SourceServer,
-            Status = row.Status,
-            Expiration = row.Expiration,
-            QueryTimestamp = row.QueryTimestamp,
-            RawResponse = row.RawResponse,
-            Registration = row.Registration
-        };
-    }
-
-    private class WhoisResponseReadEntry
-    {
-        public long Id { get; set; }
-
-        public string Domain { get; set; }
-
-        public string SourceServer { get; set; }
-
-        public WhoisResponseStatus Status { get; set; }
-
-        public DateTime QueryTimestamp { get; set; }
-
-        public DateTime? Registration { get; set; }
-
-        public DateTime? Expiration { get; set; }
-
-        public string RawResponse { get; set; }
+            new Dictionary<string, (DbType, object?)> { ["domainName"] = (DbType.String, domain.FullName) },
+            parser => new WhoisResponse
+            {
+                Id = parser.GetInt64(0),
+                Domain = new Domain(parser.GetString(1)),
+                SourceServer = parser.GetString(2),
+                Status = (WhoisResponseStatus)parser.GetInt32(3),
+                QueryTimestamp = parser.GetDateTime(4),
+                Registration = parser.GetNullableDateTime(5),
+                Expiration = parser.GetNullableDateTime(6),
+                RawResponse = parser.GetString(7)
+            },
+            null);
     }
 }

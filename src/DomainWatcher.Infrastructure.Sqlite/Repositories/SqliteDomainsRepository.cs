@@ -1,7 +1,8 @@
-﻿using Dapper;
+﻿using System.Data;
 using DomainWatcher.Core.Repositories;
 using DomainWatcher.Core.Values;
 using DomainWatcher.Infrastructure.Sqlite.Abstract;
+using DomainWatcher.Infrastructure.Sqlite.Extensions;
 using DomainWatcher.Infrastructure.Sqlite.Internal;
 using DomainWatcher.Infrastructure.Sqlite.Internal.Extensions;
 using DomainWatcher.Infrastructure.Sqlite.Internal.TableRows;
@@ -16,7 +17,7 @@ public class SqliteDomainsRepository(SqliteConnection connection) : SqliteServic
         return Connection.ExecuteAsync($"""
             INSERT OR IGNORE INTO {TableNames.Domains} ({nameof(DomainRow.Domain)}, {nameof(DomainRow.IsWatched)}) VALUES (@domain, False)
             """,
-            new { domain = domain.FullName });
+            new Dictionary<string, (DbType, object?)>{ ["domain"] = (DbType.String, domain.FullName) });
     }
 
     public Task Watch(Domain domain)
@@ -25,7 +26,7 @@ public class SqliteDomainsRepository(SqliteConnection connection) : SqliteServic
             INSERT INTO {TableNames.Domains} ({nameof(DomainRow.Domain)}, {nameof(DomainRow.IsWatched)}) VALUES (@domain, True)
             ON CONFLICT({nameof(DomainRow.Domain)}) DO UPDATE SET {nameof(DomainRow.IsWatched)} = True
             """,
-            new { domain = domain.FullName });
+            new Dictionary<string, (DbType, object?)> { ["domain"] = (DbType.String, domain.FullName) });
     }
 
     public Task Unwatch(Domain domain)
@@ -33,15 +34,17 @@ public class SqliteDomainsRepository(SqliteConnection connection) : SqliteServic
         return Connection.ExecuteAsync($"""
             UPDATE {TableNames.Domains} SET {nameof(DomainRow.IsWatched)} = False WHERE {nameof(DomainRow.Domain)} = @domain
             """,
-            new { domain = domain.FullName });
+            new Dictionary<string, (DbType, object?)> { ["domain"] = (DbType.String, domain.FullName) });
     }
 
     public Task<bool> IsWatched(Domain domain)
     {
-        return Connection.QuerySingleOrDefaultAsync<bool>($"""
+        return Connection.QuerySingleOrDefaultAsync($"""
             SELECT {(nameof(DomainRow.IsWatched))} FROM {TableNames.Domains} WHERE {nameof(DomainRow.Domain)} = @domain
             """,
-            new { domain = domain.FullName });
+            new Dictionary<string, (DbType, object?)> { ["domain"] = (DbType.String, domain.FullName) },
+            x => x.GetBoolean(0),
+            false);
     }
 
     public IAsyncEnumerable<Domain> GetWatchedDomains()
@@ -49,6 +52,6 @@ public class SqliteDomainsRepository(SqliteConnection connection) : SqliteServic
         return Connection.AsyncRead($"""
             SELECT {nameof(DomainRow.Domain)} FROM {TableNames.Domains} WHERE {nameof(DomainRow.IsWatched)} = True
             """,
-            x => new Domain(x.GetString(0)));
+            (SqliteDataReader x) => new Domain(x.GetString(0)));
     }
 }

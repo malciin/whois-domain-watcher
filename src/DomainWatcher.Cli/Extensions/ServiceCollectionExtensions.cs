@@ -7,10 +7,20 @@ namespace DomainWatcher.Cli.Extensions;
 
 public static partial class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddCache<TInterface, TCache>(this IServiceCollection services)
-        where TCache : TInterface
+    // TODO: Check if sctuor will be AoT compatible (at the development time it was not compatible).
+    //public static IServiceCollection AddCache<TInterface, TCache>(this IServiceCollection services)
+    //    where TCache : TInterface
+    //{
+    //    services.Decorate(typeof(TInterface), typeof(TCache));
+
+    //    return services;
+    //}
+
+    public static IServiceCollection AddCache<TInterface, TCache>(this IServiceCollection services, Func<IServiceProvider, TCache> factory)
+        where TInterface : class
+        where TCache : class, TInterface
     {
-        services.Decorate(typeof(TInterface), typeof(TCache));
+        services.AddScoped<TInterface, TCache>(factory);
 
         return services;
     }

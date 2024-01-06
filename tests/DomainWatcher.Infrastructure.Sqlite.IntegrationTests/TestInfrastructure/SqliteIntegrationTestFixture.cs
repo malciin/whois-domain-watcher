@@ -45,4 +45,9 @@ public class SqliteIntegrationTestFixture
     }
 
     protected T ResolveService<T>() where T : notnull => testScope.ServiceProvider.GetRequiredService<T>();
+
+    protected void MigrateDb()
+    {
+        ResolveService<SqliteDbMigrator>().MigrateIfNecessary().GetAwaiter().GetResult();
+    }
 }

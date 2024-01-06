@@ -2,10 +2,10 @@
 using DomainWatcher.Cli.Internal.LogEnrichers;
 using DomainWatcher.Core;
 using DomainWatcher.Core.Whois.Contracts;
-using DomainWatcher.Infrastructure.Cache.Memory;
-using DomainWatcher.Infrastructure.HttpServer;
+using DomainWatcher.Core.Whois.Implementation;
 using DomainWatcher.Infrastructure.Sqlite;
 using DomainWatcher.Infrastructure.Sqlite.Cache;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,8 +21,11 @@ hostBuilder
     .ConfigureServices(x => x
         .AddCore()
         .AddSqlite()
-        .AddCache<IWhoisServerUrlResolver, WhoisServerUrlResolverSqliteCache>() // longer persisted cache
-        .AddCache<IWhoisServerUrlResolver, WhoisServerUrlResolverMemoryCache>() // shortlived memcache
+        // Clunky way of adding decorator because Scrutor right now is not AOT compatible.
+        .AddCache<IWhoisServerUrlResolver, WhoisServerUrlResolverSqliteCache>(ctx => new WhoisServerUrlResolverSqliteCache(
+            ctx.GetRequiredService<SqliteConnection>(),
+            ctx.GetRequiredService<ILogger<WhoisServerUrlResolverSqliteCache>>(),
+            new WhoisServerUrlResolver(ctx.GetRequiredService<IWhoisRawResponseProvider>())))
         .AddHttpServer()
         .AddCliServices())
     .UseSerilog((_, configuration) => configuration

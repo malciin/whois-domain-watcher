@@ -1,11 +1,13 @@
 ﻿using DomainWatcher.Cli.Extensions;
 using DomainWatcher.Core;
 using DomainWatcher.Core.Whois.Contracts;
+using DomainWatcher.Core.Whois.Implementation;
 using DomainWatcher.Infrastructure.Cache.Memory;
 using DomainWatcher.Infrastructure.HttpServer;
 using DomainWatcher.Infrastructure.HttpServer.Contracts;
 using DomainWatcher.Infrastructure.Sqlite;
 using DomainWatcher.Infrastructure.Sqlite.Cache;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -37,8 +39,10 @@ public abstract class E2ETestFixture
             .ConfigureServices(x => x
                 .AddCore()
                 .AddSqlite($"Data Source={dbName}")
-                .AddCache<IWhoisServerUrlResolver, WhoisServerUrlResolverSqliteCache>() // longer persisted cache
-                .AddCache<IWhoisServerUrlResolver, WhoisServerUrlResolverMemoryCache>() // shortlived memcache
+                .AddCache<IWhoisServerUrlResolver, WhoisServerUrlResolverSqliteCache>(ctx => new WhoisServerUrlResolverSqliteCache(
+                    ctx.GetRequiredService<SqliteConnection>(),
+                    ctx.GetRequiredService<ILogger<WhoisServerUrlResolverSqliteCache>>(),
+                    new WhoisServerUrlResolver(ctx.GetRequiredService<IWhoisRawResponseProvider>())))
                 .AddHttpServer()
                 .AddCliServices())
             .UseSerilog((_, configuration) => configuration

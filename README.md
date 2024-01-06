@@ -4,6 +4,8 @@ Simple http daemon that watches whois responses for domains. Every whois respons
 
 It's intended to be used with any cli http client like `cURL` on linux or `Invoke-RestMethod` on windows `PowerShell`.
 
+Built in C# with AOT compilation.
+
 ## Features
 
 - automatic resolution of responsible whois server for given `TLD` from `whois.iana.org` - ex. for `.PL` it resolves to `whois.dns.pl`
@@ -16,7 +18,9 @@ It's intended to be used with any cli http client like `cURL` on linux or `Invok
 
 - every whois response is stored in sqlite db which can be processed further
 
-- internal http server written from scratch (just for fun)
+- whole app is built as AOT thanks by using Source Generators rather than reflection
+
+- internal embeddable http server written from scratch for AOT purposes
 
 ## Usage
 
