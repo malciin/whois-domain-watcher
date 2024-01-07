@@ -1,0 +1,9 @@
+﻿# There are default program settings on which the daemon will run if other overrides was provided.
+# It can be overriden by cli args like --port or by another settings.yaml file
+Port: 0
+Serilog:
+  MinimumLevel:
+    Default: Information
+    Override:
+      Microsoft.Extensions.Hosting: Warning
+      Microsoft.Hosting: Warning

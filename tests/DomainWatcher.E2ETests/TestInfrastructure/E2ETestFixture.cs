@@ -46,12 +46,11 @@ public abstract class E2ETestFixture
                 .AddHttpServer()
                 .AddCliServices())
             .UseSerilog((_, configuration) => configuration
-                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContextName}] {Message:lj}{NewLine}{Exception}")
+                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}")
                 .MinimumLevel.Override("Microsoft.Extensions.Hosting", LogEventLevel.Warning)
                 .MinimumLevel.Override("Microsoft.Hosting", LogEventLevel.Warning)
                 .MinimumLevel.Verbose()
-                .Enrich.FromLogContext()
-                .Enrich.WithComputed("SourceContextName", "Substring(SourceContext, LastIndexOf(SourceContext, '.') + 1)"))
+                .Enrich.FromLogContext())
             .Build();
 
         var logger = host.Services.GetRequiredService<ILogger<E2ETestFixture>>();

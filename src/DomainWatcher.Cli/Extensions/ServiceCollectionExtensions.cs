@@ -37,7 +37,7 @@ public static partial class ServiceCollectionExtensions
         services
             .AddInternalHttpServer((s, options) =>
             {
-                var port = s.GetRequiredService<IConfiguration>()["port"];
+                var port = s.GetRequiredService<IConfiguration>()["Port"];
 
                 options.Port = port != null ? int.Parse(port) : 0;
             })

@@ -2,7 +2,7 @@
   "profiles": {
     "DomainWatcher.Cli": {
       "commandName": "Project",
-      "commandLineArgs": "--port 8051"
+      "commandLineArgs": "--port 8052 --Serilog:MinimumLevel:Default Debug"
     }
   }
 }

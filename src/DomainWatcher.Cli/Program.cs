@@ -1,4 +1,5 @@
-﻿using DomainWatcher.Cli.Extensions;
+﻿using DomainWatcher.Cli;
+using DomainWatcher.Cli.Extensions;
 using DomainWatcher.Cli.Internal.LogEnrichers;
 using DomainWatcher.Core;
 using DomainWatcher.Core.Whois.Contracts;
@@ -11,12 +12,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using Serilog.Events;
 
 var hostBuilder = Host.CreateDefaultBuilder(args);
 
 hostBuilder
-    .ConfigureAppConfiguration(x => x.AddCommandLine(args))
+    .ConfigureAppConfiguration(x => x
+        .AddYamlString(ReferenceSettings.Yaml)
+        .AddYamlFile("settings.yaml", optional: true)
+        .AddCommandLine(args))
     .ConfigureLogging((_, logging) => logging.AddSerilog())
     .ConfigureServices(x => x
         .AddCore()
@@ -28,20 +31,21 @@ hostBuilder
             new WhoisServerUrlResolver(ctx.GetRequiredService<IWhoisRawResponseProvider>())))
         .AddHttpServer()
         .AddCliServices())
-    .UseSerilog((_, configuration) => configuration
+    .UseSerilog((host, configuration) => configuration
+        .ReadFrom.Configuration(host.Configuration)
         .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContextName}] {Message:lj}{NewLine}{Exception}")
-        .MinimumLevel.Override("Microsoft.Extensions.Hosting", LogEventLevel.Warning)
-        .MinimumLevel.Override("Microsoft.Hosting", LogEventLevel.Warning)
-        .MinimumLevel.Debug()
         .Enrich.FromLogContext()
         .Enrich.With<SourceContextNameEnricher>());
 
 using var host = hostBuilder.Build();
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
 
-if (host.Services.GetRequiredService<IConfiguration>()["port"] == null)
+if (host.Services.GetRequiredService<IConfiguration>()["Port"] == "0")
 {
-    logger.LogWarning("No --port specified. Http server will start on port provided by the system. Try run specifyng port like --port 8080");
+    logger.LogWarning("""
+        Http server will use 0 port which means it will use port provided by the system.
+        If you need static port try run --port 8080 or specify port in settings.yaml
+        """);
 }
 
 await host.Services.GetRequiredService<SqliteDbMigrator>().MigrateIfNecessary();

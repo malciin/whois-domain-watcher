@@ -13,10 +13,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="NetEscapades.Configuration.Yaml" Version="3.1.0" />
     <PackageReference Include="Serilog" Version="3.1.1" />
-    <PackageReference Include="Serilog.Expressions" Version="4.0.0" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
     <PackageReference Include="System.Linq.Async" Version="6.0.1" />
   </ItemGroup>
@@ -32,6 +33,33 @@
   <ItemGroup>
     <Compile Remove="_GeneratedSource/**/*.cs" />
     <None Include="_GeneratedSource/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="ReferenceSettings.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ReferenceSettings.tt</DependentUpon>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ReferenceSettings.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ReferenceSettings.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="ReferenceSettings.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ReferenceSettings.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
 
 </Project>

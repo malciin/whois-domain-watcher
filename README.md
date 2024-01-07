@@ -37,6 +37,8 @@ For sake of simplicity I've assume port to be `8051` and - if applicable - domai
 | `Invoke-RestMethod http://localhost:8051/queue` | `curl localhost:8051/queue` | Gets watched domains queue status - allows to check when each of the watched domains will be queried |
 | `Invoke-RestMethod http://localhost:8051/s/*.dev` | `curl localhost:8051/s/*.dev` | Searching endpoint. Returns status of any watched domain by given filter. In that example it gets all watched domains for `.dev` tld. More info in `Searching` section |
 
+If you don't want to always provide --port XYZ you can create settings.yaml file to configure it. Check settings.Reference.yaml for reference of what options you can configure.
+
 ## Searching
 
 `/s/{filter}` endpoint supports searching through **watched** domains. Filters could be any letter/digit, `*` or `+`.
