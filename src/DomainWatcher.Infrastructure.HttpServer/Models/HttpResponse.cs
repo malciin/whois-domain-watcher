@@ -25,6 +25,7 @@ public sealed class HttpResponse
     public async Task WriteResponse(NetworkStream networkStream)
     {
         using var streamWriter = new StreamWriter(networkStream, leaveOpen: true);
+        streamWriter.NewLine = "\r\n";
         await streamWriter.WriteLineAsync($"""
             HTTP/1.1 {(int)Code} {StatusCodeToDescriptiveText[Code]}
             Date: {DateTime.UtcNow}
@@ -39,7 +40,8 @@ public sealed class HttpResponse
 
         if (Response == null)
         {
-            await streamWriter.WriteAsync("\r\n\r\n");
+            await streamWriter.WriteLineAsync();
+            await streamWriter.WriteLineAsync();
             return;
         }
 

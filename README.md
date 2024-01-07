@@ -22,9 +22,23 @@ Built in C# with AOT compilation.
 
 - internal embeddable http server written from scratch for AOT purposes
 
-## Usage
 
-To run daemon type `./domains-watcher --port XYZ` where `XYZ` is the port number.
+
+## Instruction
+
+### Dockerfile
+
+To build docker container just use `docker build https://github.com/malciin/whois-domain-watcher.git -t domain-watcher:1.0`
+
+Then run `docker run --rm -it -p XYZ:80 domain-watcher:1.0` where `XYZ` is the port number.
+
+### Cli
+
+Type `./DomainsWatcher.Cli --port XYZ` where `XYZ` is the port number.
+
+If you don't want to always provide --port XYZ you can create settings.yaml file to configure it. Check <a href="https://github.com/malciin/whois-domain-watcher/blob/master/src/DomainWatcher.Cli/settings.Reference.yaml">settings.Reference.yaml</a> for reference of what options you can configure.
+
+### Usage
 
 For sake of simplicity I've assume port to be `8051` and - if applicable - domain parameter is `google.com`.
 
@@ -36,8 +50,6 @@ For sake of simplicity I've assume port to be `8051` and - if applicable - domai
 | `Invoke-RestMethod http://localhost:8051 -Method 'DELETE' -Body 'google.com'` | `curl -X DELETE -d "google.com" localhost:8051` | Unwatches domain |
 | `Invoke-RestMethod http://localhost:8051/queue` | `curl localhost:8051/queue` | Gets watched domains queue status - allows to check when each of the watched domains will be queried |
 | `Invoke-RestMethod http://localhost:8051/s/*.dev` | `curl localhost:8051/s/*.dev` | Searching endpoint. Returns status of any watched domain by given filter. In that example it gets all watched domains for `.dev` tld. More info in `Searching` section |
-
-If you don't want to always provide --port XYZ you can create settings.yaml file to configure it. Check settings.Reference.yaml for reference of what options you can configure.
 
 ## Searching
 
