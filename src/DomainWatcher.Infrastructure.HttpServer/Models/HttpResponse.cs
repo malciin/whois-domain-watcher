@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
-using DomainWatcher.Infrastructure.HttpServer.Constants;
+using DomainWatcher.Infrastructure.HttpServer.Internal.Constants;
 using DomainWatcher.Infrastructure.HttpServer.Internal.Values;
 
 namespace DomainWatcher.Infrastructure.HttpServer.Models;

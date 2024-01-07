@@ -1,4 +1,4 @@
-﻿namespace DomainWatcher.Infrastructure.HttpServer.Constants;
+﻿namespace DomainWatcher.Infrastructure.HttpServer.Internal.Constants;
 
 internal class MimeTypes
 {

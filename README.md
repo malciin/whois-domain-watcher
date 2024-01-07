@@ -22,15 +22,15 @@ Built in C# with AOT compilation.
 
 - internal embeddable http server written from scratch for AOT purposes
 
-
-
 ## Instruction
 
-### Dockerfile
+### Docker
 
-To build docker container just use `docker build https://github.com/malciin/whois-domain-watcher.git -t domain-watcher:1.0`
+To build docker container use `docker build https://github.com/malciin/whois-domain-watcher.git -t domain-watcher:1.0`
 
 Then run `docker run --rm -it -p XYZ:80 domain-watcher:1.0` where `XYZ` is the port number.
+
+Db is stored in `/app/sqlite.db` so you probably want to store it in docker volume.
 
 ### Cli
 
@@ -44,7 +44,7 @@ For sake of simplicity I've assume port to be `8051` and - if applicable - domai
 
 | PowerShell | cURL | Description | 
 |-|-|-|
-| `Invoke-RestMethod http://localhost:8051` | `curl localhost:8051` | Gets watched domain statuses |
+| `Invoke-RestMethod http://localhost:8051` | `curl localhost:8051` | Gets watched domains statuses |
 | `Invoke-RestMethod http://localhost:8051/google.com` | `curl localhost:8051/google.com` | Gets whois response for any domain. It does not change domain watch status |
 | `Invoke-RestMethod http://localhost:8051 -Method 'POST' -Body 'google.com'` | `curl -d "google.com" localhost:8051` | Watches domain and returns its status |
 | `Invoke-RestMethod http://localhost:8051 -Method 'DELETE' -Body 'google.com'` | `curl -X DELETE -d "google.com" localhost:8051` | Unwatches domain |

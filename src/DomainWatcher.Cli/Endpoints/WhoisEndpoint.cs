@@ -26,7 +26,7 @@ public class WhoisEndpoint(
         if (latestAvailableWhoisResponse != null && latestAvailableWhoisResponse.QueryTimestamp < DateTime.UtcNow.AddDays(7))
         {
             // if we've got previous whois response that is not too old we'll just use that.
-            return HttpResponse.PlainText(latestAvailableWhoisResponse.RawResponse.Trim());
+            return HttpResponse.PlainText(latestAvailableWhoisResponse.RawResponse.TrimEnd());
         }
 
         var domainSupportedResult = await client.IsDomainSupported(domain);
