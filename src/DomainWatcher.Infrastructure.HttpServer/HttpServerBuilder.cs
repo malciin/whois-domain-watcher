@@ -8,12 +8,10 @@ using Microsoft.Extensions.Logging;
 
 namespace DomainWatcher.Infrastructure.HttpServer;
 
-public class HttpServerBuilder
+public class HttpServerBuilder : IHttpPipelineBuilder
 {
     private readonly IServiceCollection serviceCollection;
     private readonly List<EndpointEntry> endpointEntries;
-
-    private bool endpointsFeatureEnabled = false;
 
     public HttpServerBuilder(
         IServiceCollection serviceCollection,
@@ -23,16 +21,18 @@ public class HttpServerBuilder
         this.endpointEntries = [];
 
         serviceCollection.AddSingleton(httpServerOptionsFunc);
+        serviceCollection.AddSingleton(ctx => new EndpointsResolver(
+            endpointEntries,
+            ctx.GetRequiredService<ILogger<EndpointsResolver>>()));
         serviceCollection.AddSingleton<HttpServer>();
         serviceCollection.AddSingleton<HttpServerInfo>();
         serviceCollection.AddSingleton<IHttpServerInfo>(ctx => ctx.GetRequiredService<HttpServerInfo>());
     }
 
-    public HttpServerBuilder UseEndpoint<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
+    public HttpServerBuilder AddEndpoint<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
         where T : class, IHttpEndpoint
     {
-        EnableEndpointsFeature();
-
         endpointEntries.Add(new EndpointEntry
         {
             Path = T.Path,
@@ -44,7 +44,8 @@ public class HttpServerBuilder
         return this;
     }
 
-    public HttpServerBuilder UseMiddleware<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
+    public IHttpPipelineBuilder Use<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>()
         where T : class, IRequestMiddleware
     {
         serviceCollection.AddSingleton<IRequestMiddleware, T>();
@@ -57,21 +58,5 @@ public class HttpServerBuilder
         serviceCollection.AddHostedService<HttpServerHostedService>();
 
         return this;
-    }
-
-    private void EnableEndpointsFeature()
-    {
-        if (endpointsFeatureEnabled)
-        {
-            return;
-        }
-
-        serviceCollection.AddSingleton(ctx => new EndpointsResolver(
-            endpointEntries,
-            ctx.GetRequiredService<ILogger<EndpointsResolver>>()));
-
-        UseMiddleware<EndpointDispatcherMiddleware>();
-
-        endpointsFeatureEnabled = true;
     }
 }

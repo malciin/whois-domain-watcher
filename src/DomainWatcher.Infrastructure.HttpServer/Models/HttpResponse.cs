@@ -2,8 +2,7 @@
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
-using DomainWatcher.Infrastructure.HttpServer.Internal.Constants;
-using DomainWatcher.Infrastructure.HttpServer.Internal.Values;
+using DomainWatcher.Infrastructure.HttpServer.Constants;
 
 namespace DomainWatcher.Infrastructure.HttpServer.Models;
 
@@ -11,9 +10,9 @@ public sealed class HttpResponse
 {
     public required HttpStatusCode Code { get; init; }
 
-    internal ContentResponse? Response { get; init; }
+    public HttpResponseContent? Content { get; init; }
 
-    public IDictionary<string, string> Headers { get; } = new Dictionary<string, string>();
+    public IDictionary<string, string> Headers { get; init; } = new Dictionary<string, string>();
 
     public HttpResponse WithHeader(string key, string value)
     {
@@ -25,7 +24,7 @@ public sealed class HttpResponse
     public async Task WriteResponse(NetworkStream networkStream)
     {
         using var streamWriter = new StreamWriter(networkStream, leaveOpen: true);
-        streamWriter.NewLine = "\r\n";
+        streamWriter.NewLine = HttpServerConstants.NewLineString;
         await streamWriter.WriteLineAsync($"""
             HTTP/1.1 {(int)Code} {StatusCodeToDescriptiveText[Code]}
             Date: {DateTime.UtcNow}
@@ -38,7 +37,7 @@ public sealed class HttpResponse
             await streamWriter.WriteLineAsync($"{header.Key}: {header.Value}");
         }
 
-        if (Response == null)
+        if (Content == null)
         {
             await streamWriter.WriteLineAsync();
             await streamWriter.WriteLineAsync();
@@ -46,13 +45,13 @@ public sealed class HttpResponse
         }
 
         await streamWriter.WriteLineAsync($"""
-            Content-Length: {Response.Body.Length}
-            Content-Type: {Response.ContentType}
+            Content-Length: {Content.Body.Length}
+            Content-Type: {Content.ContentType}
             """);
 
         await streamWriter.WriteLineAsync();
         await streamWriter.FlushAsync();
-        await networkStream.WriteAsync(Response.Body);
+        await networkStream.WriteAsync(Content.Body);
     }
 
     public static implicit operator Task<HttpResponse>(HttpResponse value)
@@ -81,7 +80,7 @@ public sealed class HttpResponse
         return new HttpResponse
         {
             Code = HttpStatusCode.OK,
-            Response = new ContentResponse
+            Content = new HttpResponseContent
             {
                 ContentType = MimeTypes.PlainText,
                 Body = ToUtf8Bytes(text),
@@ -94,7 +93,7 @@ public sealed class HttpResponse
         return new HttpResponse
         {
             Code = HttpStatusCode.OK,
-            Response = new ContentResponse
+            Content = new HttpResponseContent
             {
                 ContentType = MimeTypes.Json,
                 Body = ToUtf8Bytes(json),
@@ -107,7 +106,7 @@ public sealed class HttpResponse
         return new HttpResponse
         {
             Code = HttpStatusCode.OK,
-            Response = new ContentResponse
+            Content = new HttpResponseContent
             {
                 ContentType = overrideContentType != null
                     ? overrideContentType
@@ -122,7 +121,7 @@ public sealed class HttpResponse
         return new HttpResponse
         {
             Code = HttpStatusCode.BadRequest,
-            Response = new ContentResponse
+            Content = new HttpResponseContent
             {
                 ContentType = MimeTypes.PlainText,
                 Body = ToUtf8Bytes(reason)

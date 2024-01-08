@@ -20,9 +20,9 @@ public class TimedSequenceTests
             timedSequence.Add("1st", TimeSpan.FromMilliseconds(-1000));
         });
 
-        CollectionAssert.AreEqual(
+        Assert.That(
             new[] { "1st", "2nd", "3rd" },
-            await timedSequence.EnumerateAsync().Take(3).ToListAsync());
+            Is.EqualTo(await timedSequence.EnumerateAsync().Take(3).ToListAsync()));
     }
 
     [Test]
@@ -42,7 +42,9 @@ public class TimedSequenceTests
         random.Shuffle(itemsWithDelay);
         itemsWithDelay.ForEach(x => timedSequence.Add(x.Value, x.Delay));
 
-        CollectionAssert.IsOrdered(await timedSequence.EnumerateAsync().Take(itemsWithDelay.Length).ToListAsync());
+        Assert.That(
+            await timedSequence.EnumerateAsync().Take(itemsWithDelay.Length).ToListAsync(),
+            Is.Ordered);
     }
 
     [Test]

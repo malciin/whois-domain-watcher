@@ -1,7 +1,7 @@
 ﻿using Serilog.Core;
 using Serilog.Events;
 
-namespace DomainWatcher.Cli.Internal.LogEnrichers;
+namespace DomainWatcher.Cli.LogEnrichers;
 
 internal class SourceContextNameEnricher : ILogEventEnricher
 {

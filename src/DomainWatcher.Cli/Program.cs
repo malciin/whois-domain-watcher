@@ -1,9 +1,11 @@
 ﻿using DomainWatcher.Cli;
 using DomainWatcher.Cli.Extensions;
-using DomainWatcher.Cli.Internal.LogEnrichers;
+using DomainWatcher.Cli.LogEnrichers;
+using DomainWatcher.Cli.Middlewares;
 using DomainWatcher.Core;
 using DomainWatcher.Core.Whois.Contracts;
 using DomainWatcher.Core.Whois.Implementation;
+using DomainWatcher.Infrastructure.HttpServer.Contracts;
 using DomainWatcher.Infrastructure.Sqlite;
 using DomainWatcher.Infrastructure.Sqlite.Cache;
 using Microsoft.Data.Sqlite;
@@ -29,7 +31,9 @@ hostBuilder
             ctx.GetRequiredService<SqliteConnection>(),
             ctx.GetRequiredService<ILogger<WhoisServerUrlResolverSqliteCache>>(),
             new WhoisServerUrlResolver(ctx.GetRequiredService<IWhoisRawResponseProvider>())))
-        .AddHttpServer()
+        .AddHttpServer(pipeline => pipeline
+            .Use<CurlNewLineAdderForPlainTextMiddleware>()
+            .UseEndpoints())
         .AddCliServices())
     .UseSerilog((host, configuration) => configuration
         .ReadFrom.Configuration(host.Configuration)

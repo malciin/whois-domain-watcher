@@ -31,10 +31,12 @@ public class HttpServerTestsWrapper : IAsyncDisposable
         {
             var method = serverBuilder
                 .GetType()
-                .GetMethod(nameof(HttpServerBuilder.UseEndpoint))!;
+                .GetMethod(nameof(HttpServerBuilder.AddEndpoint))!;
 
             endpoints.ForEach(x => method.MakeGenericMethod(x).Invoke(serverBuilder, null));
         }
+
+        serverBuilder.UseEndpoints();
 
         serviceProvider = serviceCollection.BuildServiceProvider();
         httpServer = serviceProvider.GetRequiredService<HttpServer>();

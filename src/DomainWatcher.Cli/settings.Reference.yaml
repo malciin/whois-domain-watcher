@@ -1,6 +1,19 @@
-﻿# There are default program settings on which the daemon will run if other overrides was provided.
+﻿# There are default program settings on which the daemon will run if no other overrides was provided.
 # It can be overriden by cli args like --port or by another settings.yaml file
 Port: 0
+DbPath: sqlite.db
+
+DomainWhoisQueryIntervals:
+  # Absolute interval for taken domains. Used delay however could be smaller if domain
+  # is expiring soon - it will use Min(ExpiringTimestamp, Now + AbsoluteTimestamp)
+  DomainTaken: 7d
+  # Interval for domains for which expiration is hidden (because whois does not provide that info)
+  DomainTakenButExpirationHidden: 2d
+  # Interval for available domains
+  DomainFree: 1d
+  # Domain for which whois parser is not yet implemented
+  MissingParser: 7d
+
 Serilog:
   MinimumLevel:
     Default: Information

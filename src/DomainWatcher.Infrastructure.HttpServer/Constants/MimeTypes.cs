@@ -1,6 +1,6 @@
-﻿namespace DomainWatcher.Infrastructure.HttpServer.Internal.Constants;
+﻿namespace DomainWatcher.Infrastructure.HttpServer.Constants;
 
-internal class MimeTypes
+public class MimeTypes
 {
     public const string PlainText = "text/plain";
     public const string Html = "text/html";

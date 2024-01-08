@@ -46,7 +46,7 @@ public class TimedSequence<T>
         {
             // Unlikely to happend but for sake of peace of mind
             // if jobKeyByPlannedFireUp already exists then to avoid conflict increment datetime by 1 tick
-            while (sortedJobSequence.ContainsKey(fireAt)) fireAt = new DateTime(fireAt.Ticks + 1);
+            while (sortedJobSequence.ContainsKey(fireAt)) fireAt = new DateTime(fireAt.Ticks + 1, DateTimeKind.Utc);
 
             sortedJobSequence.Add(fireAt, item);
         }

@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Net.Sockets;
 using DomainWatcher.Infrastructure.HttpServer.Contracts;
 using DomainWatcher.Infrastructure.HttpServer.Models;
@@ -12,7 +13,7 @@ public class HttpServer(
     IEnumerable<IRequestMiddleware> requestMiddlewares,
     ILogger<HttpServer> logger)
 {
-    private readonly IReadOnlyCollection<IRequestMiddleware> requestMiddlewares = requestMiddlewares.ToList();
+    private readonly IReadOnlyList<IRequestMiddleware> requestMiddlewares = requestMiddlewares.ToList();
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -85,25 +86,30 @@ public class HttpServer(
             return;
         }
 
-        var response = await GetResponse(parseResult.Result!);
+        var httpRequest = parseResult.Result!;
+        var stopwatch = Stopwatch.StartNew();
+
+        var response = await ProcessRequest(httpRequest);
+
+        stopwatch.Stop();
+        logger.LogDebug("[{ResponseCode}] {Time} {Method} {Url}",
+            (int)response.Code,
+            $"{stopwatch.Elapsed.TotalMilliseconds:0.0}ms",
+            httpRequest.Method,
+            httpRequest.RelativeUrl);
 
         await response.WriteResponse(networkStream);
     }
 
-    private async Task<HttpResponse> GetResponse(HttpRequest request)
+    private async ValueTask<HttpResponse> ProcessRequest(HttpRequest request, int index = 0)
     {
-        foreach (var middleware in requestMiddlewares)
+        if (index == requestMiddlewares.Count)
         {
-            var response = await middleware.TryProcess(request);
+            logger.LogTrace("Request {Url} not handled by any middleware. Returning {Status} status.", request.RelativeUrl, HttpResponse.NotFound.Code);
 
-            if (response != null)
-            {
-                return response;
-            }
+            return HttpResponse.NotFound;
         }
 
-        logger.LogTrace("Request {Url} not handled by any middleware. Returning {Status} status.", request.RelativeUrl, HttpResponse.NotFound.Code);
-
-        return HttpResponse.NotFound;
+        return await requestMiddlewares[index].TryProcess(request, () => ProcessRequest(request, index + 1));
     }
 }

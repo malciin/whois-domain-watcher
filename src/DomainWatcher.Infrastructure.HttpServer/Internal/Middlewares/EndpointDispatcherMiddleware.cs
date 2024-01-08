@@ -11,11 +11,11 @@ internal class EndpointDispatcherMiddleware(
     ILogger<EndpointDispatcherMiddleware> logger,
     EndpointsResolver endpoints) : IRequestMiddleware
 {
-    public async ValueTask<HttpResponse?> TryProcess(HttpRequest request)
+    public async ValueTask<HttpResponse> TryProcess(HttpRequest request, Func<ValueTask<HttpResponse>> nextMiddleware)
     {
         if (!endpoints.TryResolve(request, out var endpointType))
         {
-            return null;
+            return await nextMiddleware();
         }
 
         logger.LogTrace("{Method} {Url} resolved to {Endpoint}", request.Method, request.RelativeUrl, endpointType!.FullName);

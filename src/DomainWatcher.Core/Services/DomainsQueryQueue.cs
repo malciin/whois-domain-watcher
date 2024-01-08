@@ -15,15 +15,19 @@ public class DomainsQueryQueue : IDomainsQueryQueue
     private readonly TimedSequence<Domain> domainsTimedSequence;
     private readonly ConcurrentDictionary<Domain, int> domainInvalidResponsesCounter;
     private readonly IWhoisResponseParser whoisResponseParser;
+    private readonly IDomainQueryDelayProvider domainQueryDelayProvider;
 
     public int Count => domainInvalidResponsesCounter.Count;
 
     public DomainsQueryQueue(
         ILogger<DomainsQueryQueue> logger,
-        IWhoisResponseParser whoisResponseParser)
+        IWhoisResponseParser whoisResponseParser,
+        IDomainQueryDelayProvider domainQueryDelayProvider)
     {
         this.logger = logger;
         this.whoisResponseParser = whoisResponseParser;
+        this.domainQueryDelayProvider = domainQueryDelayProvider;
+
         domainsTimedSequence = new TimedSequence<Domain>();
         domainInvalidResponsesCounter = new ConcurrentDictionary<Domain, int>();
     }
@@ -41,31 +45,7 @@ public class DomainsQueryQueue : IDomainsQueryQueue
     public void EnqueueNext(Domain domain, WhoisResponse? latestResponse)
     {
         domainInvalidResponsesCounter.AddOrUpdate(domain, _ => 0, (_, __) => 0);
-
-        if (latestResponse == null)
-        {
-            Enqueue(domain, TimeSpan.Zero);
-            return;
-        }
-
-        var queriedAgo = DateTime.UtcNow - latestResponse.QueryTimestamp;
-
-        if (latestResponse.IsAvailable)
-        {
-            Enqueue(domain, TimeSpan.FromHours(12) - queriedAgo);
-        }
-        else if (latestResponse.Status == WhoisResponseStatus.TakenButTimestampsHidden)
-        {
-            Enqueue(domain, TimeSpan.FromDays(1) - queriedAgo);
-        }
-        else if (latestResponse.Status == WhoisResponseStatus.ParserMissing)
-        {
-            Enqueue(domain, whoisResponseParser.DoesSupport(latestResponse.SourceServer) ? TimeSpan.Zero : TimeSpan.FromDays(7) - queriedAgo);
-        }
-        else
-        {
-            Enqueue(domain, TimeSpanMath.Min(latestResponse.Expiration!.Value - DateTime.UtcNow, TimeSpan.FromDays(7) - queriedAgo));
-        }
+        Enqueue(domain, domainQueryDelayProvider.GetDelay(domain, latestResponse));
     }
 
     public void EnqueueAfterError(Domain domain)

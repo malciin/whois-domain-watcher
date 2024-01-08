@@ -1,9 +1,8 @@
-﻿using DomainWatcher.Cli.Extensions;
+﻿using DomainWatcher.Cli;
+using DomainWatcher.Cli.Extensions;
 using DomainWatcher.Core;
 using DomainWatcher.Core.Whois.Contracts;
 using DomainWatcher.Core.Whois.Implementation;
-using DomainWatcher.Infrastructure.Cache.Memory;
-using DomainWatcher.Infrastructure.HttpServer;
 using DomainWatcher.Infrastructure.HttpServer.Contracts;
 using DomainWatcher.Infrastructure.Sqlite;
 using DomainWatcher.Infrastructure.Sqlite.Cache;
@@ -26,33 +25,23 @@ public abstract class E2ETestFixture
     private IServiceScope testCaseScope;
 
     [OneTimeSetUp]
-    public async Task OneTimeSetUp()
+    public void OneTimeSetUp()
     {
         HttpClient = new HttpClient();
-
         dbName = $"e2e-db-artifacts/{GetType().Name}_{DateTime.UtcNow.Ticks}.db";
-
         Directory.CreateDirectory(Path.GetDirectoryName(dbName)!);
-        
-        host = Host.CreateDefaultBuilder()
-            .ConfigureLogging((_, logging) => logging.AddSerilog())
-            .ConfigureServices(x => x
-                .AddCore()
-                .AddSqlite($"Data Source={dbName}")
-                .AddCache<IWhoisServerUrlResolver, WhoisServerUrlResolverSqliteCache>(ctx => new WhoisServerUrlResolverSqliteCache(
-                    ctx.GetRequiredService<SqliteConnection>(),
-                    ctx.GetRequiredService<ILogger<WhoisServerUrlResolverSqliteCache>>(),
-                    new WhoisServerUrlResolver(ctx.GetRequiredService<IWhoisRawResponseProvider>())))
-                .AddHttpServer()
-                .AddCliServices())
-            .UseSerilog((_, configuration) => configuration
-                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}")
-                .MinimumLevel.Override("Microsoft.Extensions.Hosting", LogEventLevel.Warning)
-                .MinimumLevel.Override("Microsoft.Hosting", LogEventLevel.Warning)
-                .MinimumLevel.Verbose()
-                .Enrich.FromLogContext())
-            .Build();
+    }
 
+    [OneTimeTearDown]
+    public void OneTimeTearDown()
+    {
+        HttpClient.Dispose();
+    }
+
+    [SetUp]
+    public async Task SetUp()
+    {
+        host = CreateHost(dbName);
         var logger = host.Services.GetRequiredService<ILogger<E2ETestFixture>>();
 
         logger.LogInformation("Host built");
@@ -63,27 +52,16 @@ public abstract class E2ETestFixture
         _ = host.StartAsync();
 
         await WaitForHttpServerToStart(waitLimit: TimeSpan.FromSeconds(1));
-    }
 
-    [OneTimeTearDown]
-    public async Task OneTimeTearDown()
-    {
-        await host.StopAsync();
-
-        HttpClient.Dispose();
-        host.Dispose();
-    }
-
-    [SetUp]
-    public void SetUp()
-    {
         testCaseScope = host.Services.CreateScope();
     }
 
     [TearDown]
-    public void TearDown()
+    public async Task TearDown()
     {
+        await host.StopAsync();
         testCaseScope.Dispose();
+        host.Dispose();
     }
 
     protected T Resolve<T>() where T : notnull
@@ -104,5 +82,28 @@ public abstract class E2ETestFixture
         }
 
         throw new Exception($"Http server not started within {waitLimit.TotalSeconds}s. Giving up.");
+    }
+
+    private static IHost CreateHost(string dbName)
+    {
+        return Host.CreateDefaultBuilder()
+            .ConfigureAppConfiguration(x => x.AddYamlString(ReferenceSettings.Yaml))
+            .ConfigureLogging((_, logging) => logging.AddSerilog())
+            .ConfigureServices(x => x
+                .AddCore()
+                .AddSqlite($"Data Source={dbName}")
+                .AddCache<IWhoisServerUrlResolver, WhoisServerUrlResolverSqliteCache>(ctx => new WhoisServerUrlResolverSqliteCache(
+                    ctx.GetRequiredService<SqliteConnection>(),
+                    ctx.GetRequiredService<ILogger<WhoisServerUrlResolverSqliteCache>>(),
+                    new WhoisServerUrlResolver(ctx.GetRequiredService<IWhoisRawResponseProvider>())))
+                .AddHttpServer()
+                .AddCliServices())
+            .UseSerilog((_, configuration) => configuration
+                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}")
+                .MinimumLevel.Override("Microsoft.Extensions.Hosting", LogEventLevel.Warning)
+                .MinimumLevel.Override("Microsoft.Hosting", LogEventLevel.Warning)
+                .MinimumLevel.Verbose()
+                .Enrich.FromLogContext())
+            .Build();
     }
 }

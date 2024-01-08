@@ -131,10 +131,19 @@ internal class DomainWatcherHostedService : IHostedService
 
         var nextDomainDelay = fireAt - DateTime.UtcNow;
 
-        logger.Log(
-            nextDomainDelay.TotalSeconds >= 2 ? LogLevel.Information : LogLevel.Debug,
-            "Next to queue will be {Domain} after {Delay}.",
-            domain!.FullName,
-            nextDomainDelay.ToJiraDuration(2));
+        if (nextDomainDelay < TimeSpan.Zero)
+        {
+            logger.LogDebug(
+                "Next to query will be {Domain} which will happend immiedetely",
+                domain!.FullName);
+        }
+        else
+        {
+            logger.Log(
+                nextDomainDelay.TotalSeconds >= 2 ? LogLevel.Information : LogLevel.Debug,
+                "Next to query will be {Domain} after {Delay}.",
+                domain!.FullName,
+                nextDomainDelay.ToJiraDuration(2));
+        }
     }
 }

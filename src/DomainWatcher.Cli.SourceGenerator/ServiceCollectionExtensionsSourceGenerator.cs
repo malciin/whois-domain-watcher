@@ -16,7 +16,7 @@ public class ServiceCollectionExtensionsSourceGenerator : ISourceGenerator
     public void Execute(GeneratorExecutionContext context)
     {
         var endpointImplementationsReceiver = (ClassInterfaceImplementationReceiver)context.SyntaxContextReceiver;
-        var endpointsRegisterCode = string.Join("\r\n", endpointImplementationsReceiver.Get().Select(x => $"builder.UseEndpoint<{x.Namespace}.{x.Symbol.Name}>();"));
+        var endpointsRegisterCode = string.Join("\r\n", endpointImplementationsReceiver.Get().Select(x => $"builder.AddEndpoint<{x.Namespace}.{x.Symbol.Name}>();"));
 
         context.AddSource("ServiceCollectionExtensions.g.cs", $$"""
             using DomainWatcher.Infrastructure.HttpServer;
@@ -26,7 +26,7 @@ public class ServiceCollectionExtensionsSourceGenerator : ISourceGenerator
             
             public static partial class ServiceCollectionExtensions
             {
-                private static partial HttpServerBuilder UseEndpointsSourceGen(this HttpServerBuilder builder)
+                private static partial HttpServerBuilder AddSourceGeneratedEndpoints(this HttpServerBuilder builder)
                 {
                     {{ endpointsRegisterCode.PadEachLine(8).Trim() }}
 

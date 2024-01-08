@@ -1,4 +1,5 @@
 .vs
 obj
 bin
-**/_GeneratedSource/**
+**/_GeneratedSource
+build

@@ -4,5 +4,5 @@ namespace DomainWatcher.Infrastructure.HttpServer.Contracts;
 
 public interface IRequestMiddleware
 {
-    ValueTask<HttpResponse?> TryProcess(HttpRequest request);
+    ValueTask<HttpResponse> TryProcess(HttpRequest request, Func<ValueTask<HttpResponse>> nextMiddleware);
 }

@@ -31,8 +31,6 @@ public class SearchEndpoint(
             return HttpResponse.PlainText("No watched domain found");
         }
 
-        var responseString = await responseFormatter.CreateResponse(domains);
-
-        return HttpResponse.PlainText(responseString);
+        return await responseFormatter.CreateResponse(domains);
     }
 }

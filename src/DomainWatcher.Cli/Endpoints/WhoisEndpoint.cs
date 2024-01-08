@@ -1,4 +1,5 @@
-﻿using DomainWatcher.Core.Repositories;
+﻿using DomainWatcher.Core.Contracts;
+using DomainWatcher.Core.Repositories;
 using DomainWatcher.Core.Values;
 using DomainWatcher.Core.Whois;
 using DomainWatcher.Infrastructure.HttpServer.Contracts;
@@ -11,11 +12,12 @@ public class WhoisEndpoint(
     IWhoisClient client,
     IDomainsRepository domainsRepository,
     IWhoisResponsesRepository whoisResponsesRepository,
+    IDomainQueryDelayProvider delayProvider,
     ILogger<WhoisEndpoint> logger) : IHttpEndpoint
 {
     public static HttpMethod Method => HttpMethod.Get;
 
-    public static string Path => @"^/(?<Domain>[\w\.]+)$";
+    public static string Path => @"^/(?<Domain>[\w\.]+\.[\w]+)$";
 
     public async Task<HttpResponse> Handle(HttpRequest request)
     {
@@ -23,10 +25,11 @@ public class WhoisEndpoint(
         var domain = new Domain(domainString);
         var latestAvailableWhoisResponse = await whoisResponsesRepository.GetLatestFor(domain);
 
-        if (latestAvailableWhoisResponse != null && latestAvailableWhoisResponse.QueryTimestamp < DateTime.UtcNow.AddDays(7))
+        if (latestAvailableWhoisResponse != null
+            && delayProvider.GetDelay(domain, latestAvailableWhoisResponse).TotalSeconds > 0)
         {
             // if we've got previous whois response that is not too old we'll just use that.
-            return HttpResponse.PlainText(latestAvailableWhoisResponse.RawResponse.TrimEnd());
+            return CreateResponse(latestAvailableWhoisResponse);
         }
 
         var domainSupportedResult = await client.IsDomainSupported(domain);
@@ -42,6 +45,11 @@ public class WhoisEndpoint(
         await domainsRepository.Store(domain);
         await whoisResponsesRepository.Add(latestAvailableWhoisResponse);
 
-        return HttpResponse.PlainText(latestAvailableWhoisResponse.RawResponse.TrimEnd());
+        return CreateResponse(latestAvailableWhoisResponse);
+    }
+
+    private static HttpResponse CreateResponse(WhoisResponse response)
+    {
+        return HttpResponse.PlainText(response.RawResponse.TrimEnd());
     }
 }

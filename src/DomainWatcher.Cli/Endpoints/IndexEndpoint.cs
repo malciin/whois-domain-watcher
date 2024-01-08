@@ -13,10 +13,8 @@ public class IndexEndpoint(
 
     public static string Path => "/";
 
-    public async Task<HttpResponse> Handle(HttpRequest request)
+    public Task<HttpResponse> Handle(HttpRequest request)
     {
-        var response = await responseFormatter.CreateResponse(domainsRepository.GetWatchedDomains());
-
-        return HttpResponse.PlainText(response);
+        return responseFormatter.CreateResponse(domainsRepository.GetWatchedDomains());
     }
 }

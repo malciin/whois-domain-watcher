@@ -13,7 +13,7 @@ public class WhoisClient(
 {
     public async Task<IsDomainSupportedResult> IsDomainSupported(Domain domain)
     {
-        var whoisServerUrl = await whoisServerUrlResolver.Resolve(domain.Tld);
+        var whoisServerUrl = await whoisServerUrlResolver.ResolveFor(domain);
 
         if (whoisServerUrl != null) return new IsDomainSupportedResult { IsSupported = true };
 
@@ -26,7 +26,7 @@ public class WhoisClient(
 
     public async Task<WhoisResponse> QueryAsync(Domain domain)
     {
-        var whoisServerUrl = await whoisServerUrlResolver.Resolve(domain.Tld);
+        var whoisServerUrl = await whoisServerUrlResolver.ResolveFor(domain);
 
         if (whoisServerUrl == null)
         {

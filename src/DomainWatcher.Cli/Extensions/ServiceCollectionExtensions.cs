@@ -1,5 +1,6 @@
 ﻿using DomainWatcher.Cli.Formatters;
 using DomainWatcher.Infrastructure.HttpServer;
+using DomainWatcher.Infrastructure.HttpServer.Contracts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -34,18 +35,21 @@ public static partial class ServiceCollectionExtensions
 
     public static IServiceCollection AddHttpServer(this IServiceCollection services)
     {
-        services
+        return AddHttpServer(services, x => x.UseEndpoints());
+    }
+
+    public static IServiceCollection AddHttpServer(this IServiceCollection services, Action<IHttpPipelineBuilder> createHttpPipeline)
+    {
+        createHttpPipeline(services
             .AddInternalHttpServer((s, options) =>
             {
-                var port = s.GetRequiredService<IConfiguration>()["Port"];
-
-                options.Port = port != null ? int.Parse(port) : 0;
+                options.Port = int.Parse(s.GetRequiredService<IConfiguration>()["Port"]!);
             })
-            .UseEndpointsSourceGen()
-            .RegisterAsHostedService();
+            .AddSourceGeneratedEndpoints()
+            .RegisterAsHostedService());
 
         return services;
     }
 
-    private static partial HttpServerBuilder UseEndpointsSourceGen(this HttpServerBuilder builder);
+    private static partial HttpServerBuilder AddSourceGeneratedEndpoints(this HttpServerBuilder builder);
 }
