@@ -17,11 +17,15 @@ public class WhoisResponseParserTests
     }
 
     [TestCaseSource(nameof(TestCases))]
-    public void GivenWhoisResponse_ReturnsCorrectResult(WhoisServerResponseTestCase testCase)
+    public void ParsingWorksFor(WhoisServerResponseTestCase testCase)
     {
-        var whoisResponse = File.ReadAllText($"WhoisTests/Resources/{testCase.WhoisServerUrl}@{testCase.Domain.FullName}.domain.response");
+        if (testCase.WhoisServerUrl == null)
+        {
+            Assert.Fail($"Failed to resolve {nameof(testCase.WhoisServerUrl)} for {testCase.Domain}");
+        }
 
-        var response = parser.Parse(testCase.WhoisServerUrl, whoisResponse);
+        var whoisResponse = testCase.WhoisResponse;
+        var response = parser.Parse(testCase.WhoisServerUrl!, whoisResponse);
         WhoisServerResponseParsed expectedResponse = testCase;
 
         Assert.That(response, Is.Not.Null);
@@ -71,6 +75,7 @@ public class WhoisResponseParserTests
             yield return new WhoisServerResponseTestCase
             {
                 Domain = new Domain("twitch.tv"),
+                WhoisServerUrl = "whois.nic.tv",
                 Registration = new DateTime(2009, 06, 08, 22, 31, 23, DateTimeKind.Utc),
                 Expiration = new DateTime(2024, 06, 08, 22, 31, 23, DateTimeKind.Utc)
             };
@@ -104,18 +109,142 @@ public class WhoisResponseParserTests
                         : DateTime.UtcNow.Year,
                     4, 30, 0, 0, 0, DateTimeKind.Utc)
             };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("google.to"),
+                Status = WhoisResponseStatus.TakenButTimestampsHidden,
+                Registration = null,
+                Expiration = null
+            };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("google.de"),
+                Status = WhoisResponseStatus.TakenButTimestampsHidden,
+                Registration = null,
+                Expiration = null
+            };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("google.is"),
+                // created:      May 22 2002
+                Registration = new DateTime(2002, 5, 22, 0, 0, 0, DateTimeKind.Utc),
+                // expires:      May 22 2024
+                Expiration = new DateTime(2024, 5, 22, 0, 0, 0, DateTimeKind.Utc)
+            };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("google.biz"),
+                // Creation Date: 2002-03-27T16:03:44Z
+                Registration = new DateTime(2002, 3, 27, 16, 3, 44, DateTimeKind.Utc),
+                // Registry Expiry Date: 2024-03-26T23:59:59Z
+                Expiration = new DateTime(2024, 3, 26, 23, 59, 59, DateTimeKind.Utc)
+            };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("google.co"),
+                // Creation Date: 2010-02-25T01:04:59Z
+                Registration = new DateTime(2010, 2, 25, 1, 4, 59, DateTimeKind.Utc),
+                // Registry Expiry Date: 2024-02-24T23:59:59Z
+                Expiration = new DateTime(2024, 2, 24, 23, 59, 59, DateTimeKind.Utc)
+            };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("google.fr"),
+                // created:                       2000-07-26T22:00:00Z
+                Registration = new DateTime(2000, 7, 26, 22, 0, 0, DateTimeKind.Utc),
+                // Expiry Date:                   2024-12-30T17:16:48Z
+                Expiration = new DateTime(2024, 12, 30, 17, 16, 48, DateTimeKind.Utc)
+            };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("google.info"),
+                // Creation Date: 2001-07-31T23:57:50Z
+                Registration = new DateTime(2001, 7, 31, 23, 57, 50, DateTimeKind.Utc),
+                // Registry Expiry Date: 2024-07-31T23:57:50Z
+                Expiration = new DateTime(2024, 7, 31, 23, 57, 50, DateTimeKind.Utc)
+            };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("google.me"),
+                // Creation Date: 2008-06-13T17:17:40Z
+                Registration = new DateTime(2008, 6, 13, 17, 17, 40, DateTimeKind.Utc),
+                // Registry Expiry Date: 2024-06-13T17:17:40Z
+                Expiration = new DateTime(2024, 6, 13, 17, 17, 40, DateTimeKind.Utc)
+            };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("google.tech"),
+                // Creation Date: 2015-07-29T14:20:05.0Z
+                Registration = new DateTime(2015, 7, 29, 14, 20, 5, DateTimeKind.Utc),
+                // Registry Expiry Date: 2024-07-29T23:59:59.0Z
+                Expiration = new DateTime(2024, 7, 29, 23, 59, 59, DateTimeKind.Utc)
+            };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("google.uk"),
+                //         Registered on: 11-Jun-2014
+                Registration = new DateTime(2014, 6, 11, 0, 0, 0, DateTimeKind.Utc),
+                //         Expiry date:  11-Jun-2024
+                Expiration = new DateTime(2024, 6, 11, 0, 0, 0, DateTimeKind.Utc)
+            };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("google.us"),
+                // Creation Date: 2002-04-19T23:16:01Z
+                Registration = new DateTime(2002, 4, 19, 23, 16, 1, DateTimeKind.Utc),
+                // Registry Expiry Date: 2024-04-18T23:59:59Z
+                Expiration = new DateTime(2024, 4, 18, 23, 59, 59, DateTimeKind.Utc)
+            };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("google.xyz"),
+                // Creation Date: 2014-05-20T12:04:51.0Z
+                Registration = new DateTime(2014, 5, 20, 12, 04, 51, DateTimeKind.Utc),
+                // Registry Expiry Date: 2024-11-26T23:59:59.0Z
+                Expiration = new DateTime(2024, 11, 26, 23, 59, 59, DateTimeKind.Utc)
+            };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("google.in"),
+                // Creation Date: 2005-02-14T20:35:14Z
+                Registration = new DateTime(2005, 2, 14, 20, 35, 14, DateTimeKind.Utc),
+                // Registry Expiry Date: 2024-02-14T20:35:14Z
+                Expiration = new DateTime(2024, 2, 14, 20, 35, 14, DateTimeKind.Utc)
+            };
+            yield return new WhoisServerResponseTestCase
+            {
+                Domain = new Domain("educause.edu"),
+                // Domain record activated:    11-Mar-1998
+                Registration = new DateTime(1998, 3, 11, 0, 0, 0, DateTimeKind.Utc),
+                // Domain expires:             30-May-2025
+                Expiration = new DateTime(2025, 5, 30, 0, 0, 0, DateTimeKind.Utc)
+            };
 
             var unexistingDomains = new[]
             {
+                "some-untaken-domain-but-different-response.net",
                 "some-untaken-domain.dev",
                 "some-untaken-domain.com",
                 "some-untaken-domain.pl",
                 "some-untaken-domain.net",
                 "some-untaken-domain.io",
                 "some-untaken-domain.tv",
-                "some-untaken-domain-but-different-response.net",
                 "some-untaken-domain.eu",
-                "some-untaken-domain.gg"
+                "some-untaken-domain.gg",
+                "some-untaken-domain.de",
+                "some-untaken-domain.is",
+                "some-untaken-domain.biz",
+                "some-untaken-domain.co",
+                "some-untaken-domain.fr",
+                "some-untaken-domain.info",
+                "some-untaken-domain.me",
+                "some-untaken-domain.tech",
+                "some-untaken-domain.uk",
+                "some-untaken-domain.us",
+                "some-untaken-domain.xyz",
+                "some-untaken-domain.in",
+                "some-untaken-domain.to",
+                "some-untaken-domain.edu",
             };
             foreach (var domain in unexistingDomains)
             {
@@ -132,10 +261,12 @@ public class WhoisResponseParserTests
     public class WhoisServerResponseTestCase : WhoisServerResponseParsed
     {
         public required Domain Domain { get; init; }
-    
-        public string WhoisServerUrl
+
+        public string WhoisResponse => File.ReadAllText($"WhoisTests/Resources/{WhoisServerUrl}@{Domain.FullName}.domain.response");
+
+        public string? WhoisServerUrl
         {
-            get => whoisServerOverride ?? DefaultTldToWhoisServerUrl.Single(x => Domain.Tld.EndsWith(x.Key)).Value;
+            get => whoisServerOverride ?? ResolveFromDirectory();
             init => whoisServerOverride = value;
         }
 
@@ -143,19 +274,16 @@ public class WhoisResponseParserTests
 
         public static implicit operator TestCaseData(WhoisServerResponseTestCase testCase)
         {
-            return new TestCaseData([testCase]).SetArgDisplayNames(testCase.Domain.FullName, testCase.WhoisServerUrl);
+            return new TestCaseData([testCase]).SetArgDisplayNames(testCase.Domain.FullName);
         }
 
-        private static readonly IReadOnlyDictionary<string, string> DefaultTldToWhoisServerUrl = new Dictionary<string, string>
+        private string? ResolveFromDirectory()
         {
-            ["dev"] = "whois.nic.google",
-            ["pl"] = "whois.dns.pl",
-            ["tv"] = "whois.nic.tv",
-            ["net"] = "whois.verisign-grs.com",
-            ["com"] = "whois.verisign-grs.com",
-            ["io"] = "whois.nic.io",
-            ["eu"] = "whois.eu",
-            ["gg"] = "whois.gg"
-        };
+            return new DirectoryInfo("WhoisTests/Resources")
+                .GetFiles()
+                .SingleOrDefault(x => x.Name.EndsWith($"@{Domain.FullName}.domain.response"))
+                ?.Name
+                .Split('@')[0];
+        }
     }
 }

@@ -20,5 +20,6 @@ public class WhoisResponse
 
     public DateTime? Expiration { get; init; }
 
-    public bool IsAvailable => Expiration == null && Status == WhoisResponseStatus.OK;
+    public bool IsAvailable => Expiration == null
+        && (Status == WhoisResponseStatus.OK || Status == WhoisResponseStatus.OKParsedByFallback);
 }

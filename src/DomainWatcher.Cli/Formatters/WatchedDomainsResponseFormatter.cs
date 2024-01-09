@@ -67,7 +67,7 @@ public class WatchedDomainsResponseFormatter(
         {
             null => "Not yet queried",
             { IsAvailable: true } => "Available",
-            { Status: WhoisResponseStatus.ParserMissing } => "Missing parser",
+            { Status: WhoisResponseStatus.ParserMissing } => "No parser",
             _ => "Taken"
         };
     }
@@ -79,6 +79,7 @@ public class WatchedDomainsResponseFormatter(
             null => string.Empty,
             { IsAvailable: true } => string.Empty,
             { Status: WhoisResponseStatus.TakenButTimestampsHidden } => "HIDDEN",
+            { Status: WhoisResponseStatus.ParserMissing } => "NO PARSER",
             _ => (latestResponse!.Expiration!.Value - DateTime.UtcNow).ToJiraDuration(2)
         };
     }

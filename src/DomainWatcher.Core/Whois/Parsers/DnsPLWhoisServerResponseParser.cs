@@ -1,9 +1,11 @@
-﻿using System.Globalization;
-using DomainWatcher.Core.Extensions;
-using DomainWatcher.Core.Whois.Values;
+﻿using DomainWatcher.Core.Whois.Values;
 
 namespace DomainWatcher.Core.Whois.Parsers;
 
+/// <summary>
+/// Separate parser because Expiration could be named
+/// "option expiration date:" or "renewal date:"
+/// </summary>
 internal class DnsPLWhoisServerResponseParser : WhoisServerResponseParser
 {
     private const string DateFormat = "yyyy.MM.dd HH:mm:ss";
@@ -13,7 +15,7 @@ internal class DnsPLWhoisServerResponseParser : WhoisServerResponseParser
         yield return "whois.dns.pl";
     }
 
-    internal override WhoisServerResponseParsed Parse(string rawResponse)
+    internal override WhoisServerResponseParsed Parse(string whoisServerUrl, string rawResponse)
     {
         if (rawResponse.Contains("No information available about domain name", StringComparison.InvariantCulture))
         {
@@ -22,22 +24,9 @@ internal class DnsPLWhoisServerResponseParser : WhoisServerResponseParser
 
         return new WhoisServerResponseParsed
         {
-            Registration = ParseDate(rawResponse, "created:", DateFormat)!,
-            Expiration = ParseDate(rawResponse, "option expiration date:", DateFormat)
-                ?? ParseDate(rawResponse, "renewal date:", DateFormat)!
+            Registration = ParseDate(rawResponse, "created:", DateFormat),
+            Expiration = ParseDateOrNull(rawResponse, "option expiration date:", DateFormat)
+                ?? ParseDate(rawResponse, "renewal date:", DateFormat)
         };
-    }
-
-    private DateTime? ParseDate(string rawResponse, string lineWithDate)
-    {
-        var line = rawResponse.GetLineThatContains(lineWithDate);
-
-        if (line == null) return null;
-
-        var dateString = line[line.IndexOfAny(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])..];
-
-        return DateTime
-            .ParseExact(dateString, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal)
-            .ToUniversalTime();
     }
 }
