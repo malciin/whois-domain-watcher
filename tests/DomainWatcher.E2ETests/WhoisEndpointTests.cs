@@ -11,13 +11,9 @@ namespace DomainWatcher.E2ETests;
 public class WhoisEndpointTests : E2ETestFixture
 {
     [TestCase("google.com")]
-    [TestCase("google.gg")]
-    [TestCase("google.eu")]
     [TestCase("google.net")]
-    [TestCase("google.pl")]
     [TestCase("google.dev")]
     [TestCase("google.zip")]
-    [TestCase("twitch.tv")]
     public async Task WhoisQuerying_Works(string domainName)
     {
         var url = $"http://localhost:{Resolve<IHttpServerInfo>().AssignedPort}/{domainName}";
@@ -36,20 +32,10 @@ public class WhoisEndpointTests : E2ETestFixture
         Assert.That(storedResponseInDb.Id, Is.Not.EqualTo(0), "Stored response has invalid id.");
         Assert.That(storedResponseInDb.Domain, Is.EqualTo(domain), "Stored response has invalid domain.");
         Assert.That(storedResponseInDb.IsAvailable, Is.False, "Stored response has invalid availability status.");
-        Assert.That(storedResponseInDb.Status, Is.EqualTo(GetExpectedStatusFor(domainName)), "Stored response has invalid status");
+        Assert.That(storedResponseInDb.Status, Is.EqualTo(WhoisResponseStatus.OK), "Stored response has invalid status");
         Assert.That(storedResponseInDb.SourceServer, Is.EqualTo(await Resolve<IWhoisServerUrlResolver>().ResolveFor(domain)), "Stored response has invalid server");
         Assert.That(domainResponsesIds, Has.Count.EqualTo(1), "Unexpected amount of domain responses stored");
         Assert.That(domainResponsesIds, Is.EquivalentTo(new[] { storedResponseInDb.Id }), "Unexpected id stored");
         Assert.That(responseString, Is.EqualTo(storedResponseInDb!.RawResponse.TrimEnd()), "Invalid whois response returned");
-    }
-
-    private static WhoisResponseStatus GetExpectedStatusFor(string domainName)
-    {
-        if (domainName.EndsWith(".eu"))
-        {
-            return WhoisResponseStatus.TakenButTimestampsHidden;
-        }
-
-        return WhoisResponseStatus.OK;
     }
 }

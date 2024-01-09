@@ -3,7 +3,7 @@ using DomainWatcher.Cli.Formatters.Values;
 using DomainWatcher.Core.Contracts;
 using DomainWatcher.Core.Extensions;
 using DomainWatcher.Core.Repositories;
-using DomainWatcher.Core.Values;
+using DomainWatcher.Core.Settings;
 using DomainWatcher.Infrastructure.HttpServer.Contracts;
 using DomainWatcher.Infrastructure.HttpServer.Models;
 
@@ -13,7 +13,7 @@ public class QueueStatusEndpoint(
     IDomainsQueryQueue queue,
     IDomainsRepository domainsRepository,
     IWhoisResponsesRepository whoisResponsesRepository,
-    DomainWhoisQueryIntervals domainWhoisQueryIntervals) : IHttpEndpoint
+    DomainWhoisQueryIntervalsSettings domainWhoisQueryIntervals) : IHttpEndpoint
 {
     public static HttpMethod Method => HttpMethod.Get;
 
@@ -39,6 +39,7 @@ public class QueueStatusEndpoint(
         queryIntervalsSection[1, 1] = $"domain taken but expiration hidden: {domainWhoisQueryIntervals.DomainTakenButExpirationHidden.ToJiraDuration()}";
         queryIntervalsSection[2, 1] = $"domain free: {domainWhoisQueryIntervals.DomainFree.ToJiraDuration()}";
         queryIntervalsSection[3, 1] = $"missing parser: {domainWhoisQueryIntervals.MissingParser.ToJiraDuration()}";
+        queryIntervalsSection[4, 1] = $"base errror retry delay: {domainWhoisQueryIntervals.BaseErrorRetryDelay.ToJiraDuration()}";
 
         stringBuilder.AppendLine(queryIntervalsSection.ToString());
         stringBuilder.AppendLine();

@@ -3,16 +3,38 @@
 Port: 0
 DbPath: sqlite.db
 
-DomainWhoisQueryIntervals:
-  # Absolute interval for taken domains. Used delay however could be smaller if domain
-  # is expiring soon - it will use Min(ExpiringTimestamp, Now + AbsoluteTimestamp)
-  DomainTaken: 7d
-  # Interval for domains for which expiration is hidden (because whois does not provide that info)
-  DomainTakenButExpirationHidden: 2d
-  # Interval for available domains
-  DomainFree: 1d
-  # Domain for which whois parser is not yet implemented
-  MissingParser: 7d
+ProcessingQueue:
+  # Value after which domain will be removed from processing queue if whois query for it fails
+  MaxDomainConsecutiveErrors: 5
+  WhoisQueryIntervals:
+    # Absolute interval for taken domains. Used delay however could be smaller if domain
+    # is expiring soon - it will use Min(ExpiringTimestamp, Now + AbsoluteTimestamp)
+    DomainTaken: 7d
+  
+    # Interval for domains for which expiration is hidden (because whois does not provide that info)
+    DomainTakenButExpirationHidden: 2d
+  
+    # Interval for available domains
+    DomainFree: 1d
+  
+    # Domain for which whois parser is not yet implemented
+    MissingParser: 7d
+  
+    # Base error retry delay.
+    # E.g. if there will be any error (like network failure)
+    # domain will be queried again after delay computed by formula:
+    #
+    # BaseErrorRetryDelay * Math.Pow(2, ErrorCounter)
+    #
+    # E.g. with 2h BaseErrorRetryDelay:
+    #
+    # 1st error: 2h delay
+    # 2nd error: 4h delay
+    # 3rd error: 8h delay
+    # <SUCCESS> # After success response ErrorCounter is set to 0
+    # 1st network error: 2h delay
+    # ...
+    BaseErrorRetryDelay: 2h
 
 Serilog:
   MinimumLevel:

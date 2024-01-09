@@ -8,7 +8,7 @@ Built in C# with AOT compilation.
 
 ## Features
 
-- automatic resolution of responsible whois server for given `TLD` from `whois.iana.org` - ex. for `.PL` it resolves to `whois.dns.pl`
+- automatic resolution of responsible whois server for given `TLD` from `whois.iana.org` - e.g. for `.PL` it resolves to `whois.dns.pl`
 
 - auto querying whois for watched domains
 
@@ -55,7 +55,7 @@ For sake of simplicity I've assume port to be `8051` and - if applicable - domai
 
 `/s/{filter}` endpoint supports searching through **watched** domains. Filters could be any letter/digit, `*` or `+`.
 
-`*` means string of any length, `+` means exactly one character. Example filters:
+`*` means string of any length, `+` means exactly one character. E.g. filters:
 
 | Url | Result |
 |-|-|

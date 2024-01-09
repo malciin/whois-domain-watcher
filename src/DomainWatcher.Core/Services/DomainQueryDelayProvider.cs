@@ -1,11 +1,12 @@
 ﻿using DomainWatcher.Core.Contracts;
 using DomainWatcher.Core.Enums;
+using DomainWatcher.Core.Settings;
 using DomainWatcher.Core.Utilities;
 using DomainWatcher.Core.Values;
 
 namespace DomainWatcher.Core.Services;
 
-internal class DomainQueryDelayProvider(DomainWhoisQueryIntervals queryIntervals) : IDomainQueryDelayProvider
+internal class DomainQueryDelayProvider(DomainWhoisQueryIntervalsSettings queryIntervals) : IDomainQueryDelayProvider
 {
     public TimeSpan GetDelay(Domain domain, WhoisResponse? latestResponse)
     {

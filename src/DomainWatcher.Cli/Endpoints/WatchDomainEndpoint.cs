@@ -1,5 +1,6 @@
 ﻿using DomainWatcher.Cli.Formatters;
 using DomainWatcher.Core.Contracts;
+using DomainWatcher.Core.Enums;
 using DomainWatcher.Core.Repositories;
 using DomainWatcher.Core.Values;
 using DomainWatcher.Core.Whois;
@@ -52,12 +53,33 @@ public class WatchDomainEndpoint(
             // if we haven't got any whois response or we've got an old
             // one then we just get fresh whois response and store it 
             latestAvailableWhoisResponse = await client.QueryAsync(domain);
+
             await domainsRepository.Watch(domain);
             await whoisResponsesRepository.Add(latestAvailableWhoisResponse);
         }
 
+        if (latestAvailableWhoisResponse.Status == WhoisResponseStatus.OKParsedByFallback)
+        {
+            logger.LogWarning(
+                "Domain {Domain} watched but it does not have dedicated parser. " +
+                "It can sometimes produce wrong results so use with caution!",
+                domain.FullName);
+        }
+        else if (latestAvailableWhoisResponse.Status == WhoisResponseStatus.ParserMissing)
+        {
+            logger.LogWarning(
+                "Domain {Domain} watched but it does not have parser for {WhoisUrl}. Also fallback " +
+                "parser failed to parse it. It would require to write separate parser for it to handle {WhoisUrl}.",
+                domain.FullName,
+                latestAvailableWhoisResponse.SourceServer,
+                latestAvailableWhoisResponse.SourceServer);
+        }
+        else
+        {
+            logger.LogInformation("{DomainUrl} watched.", domain.FullName);
+        }
+
         queryQueue.EnqueueNext(domain, latestAvailableWhoisResponse);
-        logger.LogInformation("{DomainUrl} watched.", domain.FullName);
 
         return HttpResponse.PlainText(
             $"{domain} watched! Status: " +

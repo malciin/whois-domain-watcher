@@ -4,16 +4,63 @@ using DomainWatcher.Infrastructure.Sqlite.Extensions;
 using DomainWatcher.Infrastructure.Sqlite.Internal;
 using DomainWatcher.Infrastructure.Sqlite.Internal.TableRows;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Logging;
 
 namespace DomainWatcher.Infrastructure.Sqlite.Abstract;
 
 public abstract class SqliteCacheService : SqliteService
 {
-    public SqliteCacheService(SqliteConnection connection) : base(connection)
+    private readonly ILogger logger;
+
+    public SqliteCacheService(ILogger logger, SqliteConnection connection) : base(connection)
     {
+        this.logger = logger;
     }
 
-    protected async Task<byte[]?> GetBytesFromCacheOrNull(string key)
+    protected Task<string?> GetFromCachedOrImpl(
+        string cacheKey,
+        TimeSpan cacheTimeToLive,
+        Func<Task<string?>> valueFactory,
+        Func<string?, bool> cacheInsertFilter)
+    {
+        return GetFromCachedOrImpl(
+            cacheKey,
+            cacheTimeToLive,
+            valueFactory,
+            cacheInsertFilter,
+            x => x == null ? Array.Empty<byte>() : Encoding.UTF8.GetBytes(x),
+            Encoding.UTF8.GetString);
+    }
+
+    protected async Task<T?> GetFromCachedOrImpl<T>(
+        string cacheKey,
+        TimeSpan cacheTimeToLive,
+        Func<Task<T>> valueFactory,
+        Func<T, bool> cacheInsertFilter,
+        Func<T, byte[]> toCacheSerializer,
+        Func<byte[], T> fromCacheDeserializer)
+    {
+        var cached = await GetBytesFromCacheOrNull(cacheKey);
+
+        if (cached != null)
+        {
+            logger.LogTrace("Cache hit for {CacheKey}", cacheKey);
+
+            return fromCacheDeserializer(cached);
+        }
+
+        logger.LogTrace("Cache miss for {CacheKey}.", cacheKey);
+        var resolveValue = await valueFactory();
+
+        if (cacheInsertFilter(resolveValue))
+        {
+            await SetCache(cacheKey, toCacheSerializer(resolveValue), cacheTimeToLive);
+        }
+
+        return resolveValue;
+    }
+
+    private async Task<byte[]?> GetBytesFromCacheOrNull(string key)
     {
         var cacheEntry = await Connection.QuerySingleOrDefaultAsync($"""
             SELECT
@@ -38,16 +85,7 @@ public abstract class SqliteCacheService : SqliteService
         return cacheEntry?.Value;
     }
 
-    protected async Task<string?> GetStringFromCacheOrNull(string key)
-    {
-        var bytes = await GetBytesFromCacheOrNull(key);
-
-        return bytes == null
-            ? null
-            : Encoding.UTF8.GetString(bytes);
-    }
-
-    protected Task SetCache(string key, byte[] value, TimeSpan timeToLive)
+    private Task SetCache(string key, byte[] value, TimeSpan timeToLive)
     {
         var cacheTimestamp = DateTime.UtcNow;
 
@@ -73,10 +111,5 @@ public abstract class SqliteCacheService : SqliteService
                 ["timestamp"] = (DbType.DateTime2, cacheTimestamp),
                 ["expirationTimestamp"] = (DbType.DateTime2, cacheTimestamp + timeToLive)
             });
-    }
-
-    protected Task SetCache(string key, string value, TimeSpan timeToLive)
-    {
-        return SetCache(key, Encoding.UTF8.GetBytes(value), timeToLive);
     }
 }

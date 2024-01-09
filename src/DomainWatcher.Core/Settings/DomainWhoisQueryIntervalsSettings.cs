@@ -1,6 +1,6 @@
-﻿namespace DomainWatcher.Core.Values;
+﻿namespace DomainWatcher.Core.Settings;
 
-public class DomainWhoisQueryIntervals
+public class DomainWhoisQueryIntervalsSettings
 {
     public required TimeSpan DomainTaken { get; init; }
 
@@ -9,4 +9,6 @@ public class DomainWhoisQueryIntervals
     public required TimeSpan DomainFree { get; init; }
 
     public required TimeSpan MissingParser { get; init; }
+
+    public required TimeSpan BaseErrorRetryDelay { get; init; }
 }

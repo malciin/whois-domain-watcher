@@ -32,8 +32,8 @@ public class CurlNewLineAdderForPlainTextMiddleware : IRequestMiddleware
             {
                 ContentType = response.Content.ContentType,
                 Body = [
-                    .. response.Content.Body,
-                    .. Encoding.UTF8.GetBytes(HttpServerConstants.NewLineString)
+                    ..response.Content.Body,
+                    ..Encoding.UTF8.GetBytes(HttpServerConstants.NewLineString)
                 ]
             }
         };

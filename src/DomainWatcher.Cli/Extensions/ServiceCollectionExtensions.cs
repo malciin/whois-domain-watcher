@@ -1,4 +1,6 @@
 ﻿using DomainWatcher.Cli.Formatters;
+using DomainWatcher.Cli.Logging.Sinks;
+using DomainWatcher.Cli.Services;
 using DomainWatcher.Infrastructure.HttpServer;
 using DomainWatcher.Infrastructure.HttpServer.Contracts;
 using Microsoft.Extensions.Configuration;
@@ -29,6 +31,9 @@ public static partial class ServiceCollectionExtensions
     public static IServiceCollection AddCliServices(this IServiceCollection services)
     {
         services.AddScoped<WatchedDomainsResponseFormatter>();
+
+        services.AddSingleton<HostCancellation>();
+        services.AddSingleton<HostStoppingWhenFatalLogSink>();
 
         return services;
     }

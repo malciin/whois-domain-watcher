@@ -11,5 +11,5 @@ build.%:
 	tar czvf build/DomainWatcher.$*.tar.gz -C build/$*/ .
 	cd build/$* && zip -r ../DomainWatcher.$*.zip *
 
-build-windows: build.win-x64
-build-linux: build.linux-x64
+windows: build.win-x64
+linux: build.linux-x64

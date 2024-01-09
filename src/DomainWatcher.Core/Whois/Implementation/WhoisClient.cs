@@ -3,10 +3,12 @@ using DomainWatcher.Core.Values;
 using DomainWatcher.Core.Whois.Contracts;
 using DomainWatcher.Core.Whois.Exceptions;
 using DomainWatcher.Core.Whois.Values;
+using Microsoft.Extensions.Logging;
 
 namespace DomainWatcher.Core.Whois.Implementation;
 
 public class WhoisClient(
+    ILogger<WhoisClient> logger,
     IWhoisServerUrlResolver whoisServerUrlResolver,
     IWhoisRawResponseProvider rawClient,
     IWhoisResponseParser whoisResponseParser) : IWhoisClient
@@ -44,13 +46,35 @@ public class WhoisClient(
 
         if (!whoisResponseParser.DoesSupport(whoisServerUrl))
         {
+            var fallbackParsedResponse = whoisResponseParser.ParseFallback(whoisResponse, out var parsedBy);
+
+            if (fallbackParsedResponse == null)
+            {
+                return new WhoisResponse
+                {
+                    Domain = domain,
+                    QueryTimestamp = queryTimestamp,
+                    RawResponse = whoisResponse,
+                    Status = WhoisResponseStatus.ParserMissing,
+                    SourceServer = whoisServerUrl
+                };
+            }
+
+            logger.LogWarning(
+                "Whois response from {WhoisServer} does not have dedicated parser. " +
+                "It was parsed however by parser dedicated for {FallbackWhoisServerUrl} which can sometimes produce wrong result.",
+                whoisServerUrl,
+                parsedBy!);
+
             return new WhoisResponse
             {
                 Domain = domain,
                 QueryTimestamp = queryTimestamp,
                 RawResponse = whoisResponse,
-                Status = WhoisResponseStatus.ParserMissing,
-                SourceServer = whoisServerUrl
+                Status = WhoisResponseStatus.OKParsedByFallback,
+                SourceServer = whoisServerUrl,
+                Registration = fallbackParsedResponse.Registration,
+                Expiration = fallbackParsedResponse.Expiration
             };
         }
 

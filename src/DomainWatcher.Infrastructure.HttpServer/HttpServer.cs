@@ -103,13 +103,16 @@ public class HttpServer(
 
     private async ValueTask<HttpResponse> ProcessRequest(HttpRequest request, int index = 0)
     {
-        if (index == requestMiddlewares.Count)
+        if (index < requestMiddlewares.Count)
         {
-            logger.LogTrace("Request {Url} not handled by any middleware. Returning {Status} status.", request.RelativeUrl, HttpResponse.NotFound.Code);
-
-            return HttpResponse.NotFound;
+            return await requestMiddlewares[index].TryProcess(request, () => ProcessRequest(request, index + 1));
         }
+        
+        logger.LogTrace(
+            "Request {Url} not handled by any middleware. Returning {Status} status.",
+            request.RelativeUrl,
+            HttpResponse.NotFound.Code);
 
-        return await requestMiddlewares[index].TryProcess(request, () => ProcessRequest(request, index + 1));
+        return HttpResponse.NotFound;
     }
 }

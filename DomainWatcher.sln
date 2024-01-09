@@ -12,6 +12,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{588ABCD0-C0CF-467A-87CE-22985440F69F}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		makefile = makefile
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Core.IntegrationTests", "tests\DomainWatcher.Core.IntegrationTests\DomainWatcher.Core.IntegrationTests.csproj", "{41B993BD-777D-4A6E-83CA-70FC6CE3568F}"
@@ -36,9 +38,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.CodeGenerator
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Source Generators", "Source Generators", "{261F75EC-EE4F-44F3-81CF-D6E679864849}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.Core.SourceGenerator", "src\DomainWatcher.Core.SourceGenerator\DomainWatcher.Core.SourceGenerator.csproj", "{5A90DFD6-9FCC-472E-9627-B279EFCB9B7F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Core.SourceGenerator", "src\DomainWatcher.Core.SourceGenerator\DomainWatcher.Core.SourceGenerator.csproj", "{5A90DFD6-9FCC-472E-9627-B279EFCB9B7F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainWatcher.Cli.SourceGenerator", "src\DomainWatcher.Cli.SourceGenerator\DomainWatcher.Cli.SourceGenerator.csproj", "{7210159F-BC4A-41CF-97EE-B9FCA49B4ED9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Cli.SourceGenerator", "src\DomainWatcher.Cli.SourceGenerator\DomainWatcher.Cli.SourceGenerator.csproj", "{7210159F-BC4A-41CF-97EE-B9FCA49B4ED9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

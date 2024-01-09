@@ -90,6 +90,12 @@ public abstract class E2ETestFixture
             .ConfigureAppConfiguration(x => x.AddYamlString(ReferenceSettings.Yaml))
             .ConfigureLogging((_, logging) => logging.AddSerilog())
             .ConfigureServices(x => x
+                .AddSerilog(configuration => configuration
+                    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}")
+                    .MinimumLevel.Override("Microsoft.Extensions.Hosting", LogEventLevel.Warning)
+                    .MinimumLevel.Override("Microsoft.Hosting", LogEventLevel.Warning)
+                    .MinimumLevel.Verbose()
+                    .Enrich.FromLogContext())
                 .AddCore()
                 .AddSqlite($"Data Source={dbName}")
                 .AddCache<IWhoisServerUrlResolver, WhoisServerUrlResolverSqliteCache>(ctx => new WhoisServerUrlResolverSqliteCache(
@@ -98,12 +104,6 @@ public abstract class E2ETestFixture
                     new WhoisServerUrlResolver(ctx.GetRequiredService<IWhoisRawResponseProvider>())))
                 .AddHttpServer()
                 .AddCliServices())
-            .UseSerilog((_, configuration) => configuration
-                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}")
-                .MinimumLevel.Override("Microsoft.Extensions.Hosting", LogEventLevel.Warning)
-                .MinimumLevel.Override("Microsoft.Hosting", LogEventLevel.Warning)
-                .MinimumLevel.Verbose()
-                .Enrich.FromLogContext())
             .Build();
     }
 }
