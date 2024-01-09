@@ -1,7 +1,9 @@
 ﻿using DomainWatcher.Cli;
 using DomainWatcher.Cli.Extensions;
-using DomainWatcher.Cli.LogEnrichers;
+using DomainWatcher.Cli.Logging.Enrichers;
+using DomainWatcher.Cli.Logging.Sinks;
 using DomainWatcher.Cli.Middlewares;
+using DomainWatcher.Cli.Services;
 using DomainWatcher.Core;
 using DomainWatcher.Core.Whois.Contracts;
 using DomainWatcher.Core.Whois.Implementation;
@@ -14,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using Serilog.Events;
 
 var hostBuilder = Host.CreateDefaultBuilder(args);
 
@@ -26,6 +29,12 @@ hostBuilder
     .ConfigureServices(x => x
         .AddCore()
         .AddSqlite()
+        .AddSerilog((services, configuration) => configuration
+            .ReadFrom.Configuration(services.GetRequiredService<IConfiguration>())
+            .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContextName}] {Message:lj}{NewLine}{Exception}")
+            .WriteTo.Sink(services.GetRequiredService<HostStoppingWhenFatalLogSink>(), LogEventLevel.Fatal)
+            .Enrich.FromLogContext()
+            .Enrich.With<SourceContextNameEnricher>())
         // Clunky way of adding decorator because Scrutor right now is not AOT compatible.
         .AddCache<IWhoisServerUrlResolver, WhoisServerUrlResolverSqliteCache>(ctx => new WhoisServerUrlResolverSqliteCache(
             ctx.GetRequiredService<SqliteConnection>(),
@@ -34,12 +43,7 @@ hostBuilder
         .AddHttpServer(pipeline => pipeline
             .Use<CurlNewLineAdderForPlainTextMiddleware>()
             .UseEndpoints())
-        .AddCliServices())
-    .UseSerilog((host, configuration) => configuration
-        .ReadFrom.Configuration(host.Configuration)
-        .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] [{SourceContextName}] {Message:lj}{NewLine}{Exception}")
-        .Enrich.FromLogContext()
-        .Enrich.With<SourceContextNameEnricher>());
+        .AddCliServices());
 
 using var host = hostBuilder.Build();
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
@@ -56,4 +60,6 @@ await host.Services.GetRequiredService<SqliteDbMigrator>().MigrateIfNecessary();
 
 logger.LogInformation("Press CTRL+C to stop.");
 
-await host.RunAsync();
+var hostCancellation = host.Services.GetRequiredService<HostCancellation>();
+hostCancellation.Token.Register(() => logger.LogWarning("Stopping daemon because fatal error happend"));
+await host.RunAsync(hostCancellation.Token);
