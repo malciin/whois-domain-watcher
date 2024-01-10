@@ -21,9 +21,12 @@ public class WhoisEndpoint(
 
     public async Task<HttpResponse> Handle(HttpRequest request)
     {
-        var domainString = this.ExtractRegexGroup(request, "Domain");
-        var domain = new Domain(domainString);
-        var latestAvailableWhoisResponse = await whoisResponsesRepository.GetLatestFor(domain);
+        if (!Domain.TryParse(this.ExtractRegexGroup(request, "Domain"), out var domain))
+        {
+            return HttpResponse.BadRequestWithReason($"Cannot parse '{this.ExtractRegexGroup(request, "Domain")}' domain");
+        }
+
+        var latestAvailableWhoisResponse = await whoisResponsesRepository.GetLatestFor(domain!);
 
         if (latestAvailableWhoisResponse != null
             && delayProvider.GetDelay(domain, latestAvailableWhoisResponse).TotalSeconds > 0)

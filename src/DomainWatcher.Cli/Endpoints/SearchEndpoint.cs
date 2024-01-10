@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using DomainWatcher.Cli.Formatters;
 using DomainWatcher.Core.Repositories;
+using DomainWatcher.Core.Values;
 using DomainWatcher.Infrastructure.HttpServer.Contracts;
 using DomainWatcher.Infrastructure.HttpServer.Models;
 using Microsoft.Extensions.Logging;
@@ -19,12 +20,21 @@ public class SearchEndpoint(
     public async Task<HttpResponse> Handle(HttpRequest request)
     {
         var filter = this.ExtractRegexGroup(request, "Filter");
-        var filterRegexString = filter.Replace(".", @"\.").Replace("+", ".").Replace("*", ".+");
-        var filterRegex = new Regex($"^{filterRegexString}$");
+        IAsyncEnumerable<Domain> domains;
 
-        logger.LogDebug("Searching regex: {Regex}", filterRegex.ToString());
-        
-        var domains = domainsRepository.GetWatchedDomains().Where(x => filterRegex.IsMatch(x.FullName));
+        if (!filter.Contains('*') && !filter.Contains('+'))
+        {
+            domains = domainsRepository.GetWatchedDomains().Where(x => x.FullName.Contains(filter));
+        }
+        else
+        {
+            var filterRegexString = filter.Replace(".", @"\.").Replace("+", ".").Replace("*", ".+");
+            var filterRegex = new Regex($"^{filterRegexString}$");
+
+            logger.LogDebug("Searching regex: {Regex}", filterRegex.ToString());
+
+            domains = domainsRepository.GetWatchedDomains().Where(x => filterRegex.IsMatch(x.FullName));
+        }
 
         if (!await domains.AnyAsync())
         {

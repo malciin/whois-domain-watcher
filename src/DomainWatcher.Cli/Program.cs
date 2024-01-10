@@ -41,6 +41,7 @@ hostBuilder
             ctx.GetRequiredService<ILogger<WhoisServerUrlResolverSqliteCache>>(),
             new WhoisServerUrlResolver(ctx.GetRequiredService<IWhoisRawResponseProvider>())))
         .AddHttpServer(pipeline => pipeline
+            .Use<CorsRequestHandlerMiddleware>()
             .Use<CurlNewLineAdderForPlainTextMiddleware>()
             .UseEndpoints())
         .AddCliServices());

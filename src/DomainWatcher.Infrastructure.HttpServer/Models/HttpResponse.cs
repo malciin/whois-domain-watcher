@@ -21,6 +21,13 @@ public sealed class HttpResponse
         return this;
     }
 
+    public HttpResponse WithHeaderIfNotPresent(string key, string value)
+    {
+        Headers.TryAdd(key, value);
+
+        return this;
+    }
+
     public async Task WriteResponse(NetworkStream networkStream)
     {
         using var streamWriter = new StreamWriter(networkStream, leaveOpen: true);
@@ -28,7 +35,6 @@ public sealed class HttpResponse
         await streamWriter.WriteLineAsync($"""
             HTTP/1.1 {(int)Code} {StatusCodeToDescriptiveText[Code]}
             Date: {DateTime.UtcNow}
-            Access-Control-Allow-Origin: *
             Connection: Closed
             """);
 
@@ -65,15 +71,15 @@ public sealed class HttpResponse
     }
 
     #region CommonResponseFactories
-    public static HttpResponse Ok { get; } = new() { Code = HttpStatusCode.OK };
+    public static HttpResponse Ok => new() { Code = HttpStatusCode.OK };
 
-    public static HttpResponse NoContent { get; } = new() { Code = HttpStatusCode.NoContent };
+    public static HttpResponse NoContent => new() { Code = HttpStatusCode.NoContent };
 
-    public static HttpResponse BadRequest { get; } = new() { Code = HttpStatusCode.BadRequest };
+    public static HttpResponse BadRequest => new() { Code = HttpStatusCode.BadRequest };
 
-    public static HttpResponse NotFound { get; } = new() { Code = HttpStatusCode.NotFound };
+    public static HttpResponse NotFound => new() { Code = HttpStatusCode.NotFound };
 
-    public static HttpResponse InternalServerError { get; } = new() { Code = HttpStatusCode.InternalServerError };
+    public static HttpResponse InternalServerError => new() { Code = HttpStatusCode.InternalServerError };
 
     public static HttpResponse PlainText(string text)
     {

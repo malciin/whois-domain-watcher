@@ -1,6 +1,7 @@
 ﻿using DomainWatcher.Cli.Formatters;
 using DomainWatcher.Cli.Logging.Sinks;
 using DomainWatcher.Cli.Services;
+using DomainWatcher.Cli.Settings;
 using DomainWatcher.Infrastructure.HttpServer;
 using DomainWatcher.Infrastructure.HttpServer.Contracts;
 using Microsoft.Extensions.Configuration;
@@ -34,6 +35,7 @@ public static partial class ServiceCollectionExtensions
 
         services.AddSingleton<HostCancellation>();
         services.AddSingleton<HostStoppingWhenFatalLogSink>();
+        services.AddSingleton<CorsHeaderSettings>();
 
         return services;
     }

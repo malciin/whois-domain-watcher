@@ -1,4 +1,6 @@
-﻿namespace DomainWatcher.Core.Values;
+﻿using System.Text.RegularExpressions;
+
+namespace DomainWatcher.Core.Values;
 
 public class Domain
 {
@@ -21,4 +23,16 @@ public class Domain
     public override bool Equals(object? obj) => obj is Domain domain && FullName == domain.FullName;
 
     public override int GetHashCode() => FullName.GetHashCode();
+
+    public static bool TryParse(string url, out Domain? domain)
+    {
+        if (Regex.IsMatch(url, @"^([\w\-]+\.)+\w+$"))
+        {
+            domain = new Domain(url);
+            return true;
+        }
+
+        domain = null;
+        return false;
+    }
 }

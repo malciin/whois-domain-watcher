@@ -43,6 +43,14 @@ ProcessingQueue:
     # ...
     BaseErrorRetryDelay: 2h
 
+Cors:
+  # Access-Control-Allow-Methods
+  Methods: GET POST DELETE
+  # Access-Control-Allow-Origin
+  Origin: '*'
+  # Access-Control-Allow-Headers
+  Headers: '*'
+
 Serilog:
   MinimumLevel:
     Default: Information

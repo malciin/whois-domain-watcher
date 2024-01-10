@@ -3,3 +3,7 @@ obj
 bin
 **/_GeneratedSource
 build
+node_modules
+src/DomainWatcher.UI/dist
+*.njsproj.user
+*.csproj.user

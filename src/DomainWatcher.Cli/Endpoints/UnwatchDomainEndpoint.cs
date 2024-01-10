@@ -17,7 +17,7 @@ public class UnwatchDomainEndpoint(IDomainsRepository repository) : IHttpEndpoin
 
         if (!await repository.IsWatched(domain))
         {
-            return HttpResponse.PlainText($"{domain.FullName} was not watched.");
+            return HttpResponse.BadRequestWithReason($"{domain.FullName} was not watched.");
         }
 
         await repository.Unwatch(domain);

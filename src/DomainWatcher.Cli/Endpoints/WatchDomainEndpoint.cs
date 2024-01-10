@@ -23,9 +23,12 @@ public class WatchDomainEndpoint(
 
     public async Task<HttpResponse> Handle(HttpRequest request)
     {
-        var domainString = request.Body;
-        var domain = new Domain(domainString);
-        var latestAvailableWhoisResponse = await whoisResponsesRepository.GetLatestFor(domain);
+        if (!Domain.TryParse(request.Body, out var domain))
+        {
+            return HttpResponse.BadRequestWithReason($"Cannot parse '{request.Body}' domain");
+        }
+
+        var latestAvailableWhoisResponse = await whoisResponsesRepository.GetLatestFor(domain!);
 
         if (await domainsRepository.IsWatched(domain))
         {
