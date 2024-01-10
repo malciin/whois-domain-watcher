@@ -11,7 +11,6 @@ namespace DomainWatcher.Cli.Endpoints;
 
 public class QueueStatusEndpoint(
     IDomainsQueryQueue queue,
-    IDomainsRepository domainsRepository,
     IWhoisResponsesRepository whoisResponsesRepository,
     DomainWhoisQueryIntervalsSettings domainWhoisQueryIntervals) : IHttpEndpoint
 {
@@ -24,22 +23,24 @@ public class QueueStatusEndpoint(
         var utcNow = DateTime.UtcNow;
         var entries = queue.GetEntries();
 
-        if (entries.Count == 0)
-        {
-            return HttpResponse.PlainText("Nothing in queue.");
-        }
+        if (queue.Count == 0) return HttpResponse.PlainText("Nothing in queue.");
 
         var stringBuilder = new StringBuilder();
-        stringBuilder.AppendLine($"{entries.Count} domains enqueued.");
+        stringBuilder.AppendLine($"{queue.Count} domains enqueued.");
         stringBuilder.AppendLine();
+        stringBuilder.AppendLine("Query intervals:");
 
-        var queryIntervalsSection = new TabularStringBuilder();
-        queryIntervalsSection[0, 0] = "Query intervals:";
-        queryIntervalsSection[0, 1] = $"domain taken: {domainWhoisQueryIntervals.DomainTaken.ToJiraDuration()}";
-        queryIntervalsSection[1, 1] = $"domain taken but expiration hidden: {domainWhoisQueryIntervals.DomainTakenButExpirationHidden.ToJiraDuration()}";
-        queryIntervalsSection[2, 1] = $"domain free: {domainWhoisQueryIntervals.DomainFree.ToJiraDuration()}";
-        queryIntervalsSection[3, 1] = $"missing parser: {domainWhoisQueryIntervals.MissingParser.ToJiraDuration()}";
-        queryIntervalsSection[4, 1] = $"base errror retry delay: {domainWhoisQueryIntervals.BaseErrorRetryDelay.ToJiraDuration()}";
+        var queryIntervalsSection = new TabularStringBuilder(new TabularColumnSpec { PaddingLeft = 4 });
+        queryIntervalsSection[0, 0] = "Domain taken";
+        queryIntervalsSection[0, 1] = domainWhoisQueryIntervals.DomainTaken.ToJiraDuration();
+        queryIntervalsSection[1, 0] = "Domain taken but expiration hidden";
+        queryIntervalsSection[1, 1] = domainWhoisQueryIntervals.DomainTakenButExpirationHidden.ToJiraDuration();
+        queryIntervalsSection[2, 0] = "Domain free";
+        queryIntervalsSection[2, 1] = domainWhoisQueryIntervals.DomainFree.ToJiraDuration();
+        queryIntervalsSection[3, 0] = "Missing parser";
+        queryIntervalsSection[3, 1] = domainWhoisQueryIntervals.MissingParser.ToJiraDuration();
+        queryIntervalsSection[4, 0] = "Base errror retry delay";
+        queryIntervalsSection[4, 1] = domainWhoisQueryIntervals.BaseErrorRetryDelay.ToJiraDuration();
 
         stringBuilder.AppendLine(queryIntervalsSection.ToString());
         stringBuilder.AppendLine();
@@ -51,8 +52,6 @@ public class QueueStatusEndpoint(
 
         foreach (var (domain, fireAt) in entries)
         {
-            if (!await domainsRepository.IsWatched(domain)) continue;
-
             var latestResponse = await whoisResponsesRepository.GetLatestFor(domain);
 
             queueStatusSection[0] = domain.FullName;

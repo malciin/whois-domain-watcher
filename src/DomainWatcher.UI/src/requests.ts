@@ -1,9 +1,9 @@
 import { DomainInfo } from "./interfaces/domain-info";
 
-const prefix = 'http://localhost:8052' ?? window.location;
+const prefix = window.location.toString();
 
 export async function getWhoisResponse(domain: string): Promise<string> {
-  const response = await fetch(`${prefix}/${domain}`);
+  const response = await fetch(`${prefix}${domain}`);
 
   return await response.text();
 }

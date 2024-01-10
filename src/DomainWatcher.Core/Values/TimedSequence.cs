@@ -33,6 +33,26 @@ public class TimedSequence<T>
         return true;
     }
 
+    public bool TryRemove(T item)
+    {
+        lock (sortedJobSequence)
+        {
+            try
+            {
+                var (fireAt, dequeued) = sortedJobSequence.First(x => x.Value?.Equals(item) == true);
+                sortedJobSequence.Remove(fireAt);
+
+                lock (readerCtsLock) readerCts?.QueueModified();
+
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+        }
+    }
+
     public IReadOnlyList<KeyValuePair<DateTime, T>> GetEntries()
     {
         lock (sortedJobSequence) return sortedJobSequence.ToList();
@@ -53,7 +73,7 @@ public class TimedSequence<T>
 
         lock (readerCtsLock)
         {
-            readerCts?.NewItemPresent();
+            readerCts?.QueueModified();
         }
     }
 
@@ -141,7 +161,7 @@ public class TimedSequence<T>
 
         private readonly CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(linkedToken);
 
-        public void NewItemPresent() => cts.Cancel();
+        public void QueueModified() => cts.Cancel();
         
         public void Dispose() => cleanUp(this);
     }

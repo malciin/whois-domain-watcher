@@ -42,8 +42,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Core.SourceGe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomainWatcher.Cli.SourceGenerator", "src\DomainWatcher.Cli.SourceGenerator\DomainWatcher.Cli.SourceGenerator.csproj", "{7210159F-BC4A-41CF-97EE-B9FCA49B4ED9}"
 EndProject
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "DomainWatcher.UI", "src\DomainWatcher.UI\DomainWatcher.UI.njsproj", "{311CA3E8-AFB6-4731-96D9-D4E44AE02C04}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{8A8C9BBD-BC08-443D-95F0-6C6A68BDCD32}"
 EndProject
 Global
@@ -108,10 +106,6 @@ Global
 		{7210159F-BC4A-41CF-97EE-B9FCA49B4ED9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7210159F-BC4A-41CF-97EE-B9FCA49B4ED9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7210159F-BC4A-41CF-97EE-B9FCA49B4ED9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{311CA3E8-AFB6-4731-96D9-D4E44AE02C04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{311CA3E8-AFB6-4731-96D9-D4E44AE02C04}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{311CA3E8-AFB6-4731-96D9-D4E44AE02C04}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{311CA3E8-AFB6-4731-96D9-D4E44AE02C04}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

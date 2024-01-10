@@ -18,6 +18,11 @@ public class DomainsQueryQueue(
 
     public int Count => domainInvalidResponsesCounter.Count;
 
+    public bool TryRemove(Domain domain)
+    {
+        return domainsTimedSequence.TryRemove(domain);
+    }
+
     public bool TryPeek(out Domain? domain, out DateTime fireAt)
     {
         return domainsTimedSequence.TryPeek(out fireAt, out domain);
