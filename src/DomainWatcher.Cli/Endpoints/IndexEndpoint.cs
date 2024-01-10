@@ -20,9 +20,11 @@ public class IndexEndpoint(
 
     public async Task<HttpResponse> Handle(HttpRequest request)
     {
-        if (request.Headers.TryGetValue("Accept", out var accept) && accept == MimeTypes.Json)
+        if (request.Headers.TryGetValue("Accept", out var accept))
         {
-            var data = await domainsRepository
+            if (accept == MimeTypes.Json)
+            {
+                var data = await domainsRepository
                 .GetWatchedDomains()
                 .SelectAwait(async (domain) => (
                     Domain: domain,
@@ -41,7 +43,32 @@ public class IndexEndpoint(
                 })
                 .ToListAsync();
 
-            return HttpResponse.Json(JsonSerializer.Serialize(data, AppJsonSerializerContext.Default.ListWatchedDomainInfoJsonResponse));
+                return HttpResponse.Json(JsonSerializer.Serialize(data, AppJsonSerializerContext.Default.ListWatchedDomainInfoJsonResponse));
+            }
+            if (accept.Contains(MimeTypes.Html))
+            {
+                try
+                {
+                    return HttpResponse.Html(File.ReadAllText("ui.html"));
+                }
+                catch (FileNotFoundException)
+                {
+                    return HttpResponse.Html("""
+                        <!doctype html>
+                        <html lang="en">
+                          <head>
+                            <meta charset="UTF-8" />
+                            <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                            <title>domain-watcher-ui</title>
+                          </head>
+                          <body>
+                            NO ui.html FILE FOUND
+                          </body>
+                        </html>
+                        """);
+                }
+            }
         }
 
         return await responseFormatter.CreateResponse(domainsRepository.GetWatchedDomains());

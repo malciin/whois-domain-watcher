@@ -1,11 +1,14 @@
-﻿using DomainWatcher.Core.Repositories;
+﻿using DomainWatcher.Core.Contracts;
+using DomainWatcher.Core.Repositories;
 using DomainWatcher.Core.Values;
 using DomainWatcher.Infrastructure.HttpServer.Contracts;
 using DomainWatcher.Infrastructure.HttpServer.Models;
 
 namespace DomainWatcher.Cli.Endpoints;
 
-public class UnwatchDomainEndpoint(IDomainsRepository repository) : IHttpEndpoint
+public class UnwatchDomainEndpoint(
+    IDomainsRepository repository,
+    IDomainsQueryQueue queryQueue) : IHttpEndpoint
 {
     public static HttpMethod Method => HttpMethod.Delete;
 
@@ -21,6 +24,7 @@ public class UnwatchDomainEndpoint(IDomainsRepository repository) : IHttpEndpoin
         }
 
         await repository.Unwatch(domain);
+        queryQueue.TryRemove(domain);
 
         return HttpResponse.PlainText($"{domain.FullName} unwatched!");
     }

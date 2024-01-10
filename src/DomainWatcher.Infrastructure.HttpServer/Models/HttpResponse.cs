@@ -94,6 +94,19 @@ public sealed class HttpResponse
         };
     }
 
+    public static HttpResponse Html(string html)
+    {
+        return new HttpResponse
+        {
+            Code = HttpStatusCode.OK,
+            Content = new HttpResponseContent
+            {
+                ContentType = MimeTypes.Html,
+                Body = ToUtf8Bytes(html),
+            }
+        };
+    }
+
     public static HttpResponse Json(string json)
     {
         return new HttpResponse

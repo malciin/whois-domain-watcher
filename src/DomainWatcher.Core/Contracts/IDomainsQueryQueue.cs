@@ -8,6 +8,8 @@ public interface IDomainsQueryQueue
 
     IReadOnlyList<(Domain Domain, DateTime FireAt)> GetEntries();
 
+    bool TryRemove(Domain domain);
+
     bool TryPeek(out Domain? domain, out DateTime fireAt);
 
     void EnqueueNext(Domain domain, WhoisResponse? latestResponse);
